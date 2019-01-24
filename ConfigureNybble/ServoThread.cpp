@@ -44,7 +44,7 @@ ServoThread::ServoThread(uint16_t interval) : ProtoThread(interval) {
 }
 
 void ServoThread::initialize() {
-  ptr_eeprom_->assignSkillAddressToOnboardEeprom();
+  NybbleEEPROM::assignSkillAddressToOnboardEeprom();
   PTL();
 
   // servo

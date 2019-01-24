@@ -63,7 +63,6 @@ class ServoThread : public ProtoThread {
     void calibratedPWM(byte i, float angle);
 
   private:
-    NybbleEEPROM* ptr_eeprom_;
 
     uint8_t timer = 0;
     float postureOrWalkingFactor;
