@@ -87,7 +87,9 @@ class ServoThread : public ProtoThread {
 
     /**
      * For the current orientation of the cat relative to expected, get the
-     * angle adjustment for the specified joint.
+     * angle adjustment for the specified joint. This function compensates for
+     * both roll and pitch, with biases towards righting the cat less in 
+     * walking movements than when standing still (holding a posture).
      * @param joint_index
      * @return angle adjustment in degrees
      */
