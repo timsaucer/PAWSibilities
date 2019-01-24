@@ -149,8 +149,8 @@
 #define uPF 9 //upper leg pitch factor
 #define lRF (-1.5*uRF) //lower leg roll factor 
 #define lPF (-1.5*uPF)//lower leg pitch factor
-#define LEFT_RIGHT_FACTOR 2
-#define POSTURE_WALKING_FACTOR 0.5
+#define SAME_SIDE_ROLL_ADJUSTMENT_FACTOR 2
+#define WALKING_ROLL_ADJUSTMENT_FACTOR 0.5
 
 // balancing parameters
 #define ROLL_LEVEL_TOLERANCE 2 //the body is still considered as level, no angle adjustment
