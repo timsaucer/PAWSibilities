@@ -126,3 +126,7 @@ void NybbleEEPROM::assignSkillAddressToOnboardEeprom() {
   }
   PTLF("Finished!");
 }
+
+int8_t NybbleEEPROM::getAdaptiveCoefficient(byte joint_index, byte parameter_index) {
+  return EEPROM.read(ADAPT_PARAM + joint_index * NUM_ADAPT_PARAM + parameter_index);
+}

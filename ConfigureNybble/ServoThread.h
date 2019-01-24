@@ -86,8 +86,6 @@ class ServoThread : public ProtoThread {
 
     void behavior(int n, char** skill, float *speedRatio, int *pause);
 
-    int8_t adaptiveCoefficient(byte idx, byte para);
-
     float adjust(byte i);
 };
 

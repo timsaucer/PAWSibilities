@@ -168,10 +168,6 @@ void ServoThread::behavior(int n, char** skill, float *speedRatio, int *pause) {
 
 }
 
-int8_t ServoThread::adaptiveCoefficient(byte idx, byte para) {
-  return EEPROM.read(ADAPT_PARAM + idx * NUM_ADAPT_PARAM + para);
-}
-
 float ServoThread::adjust(byte i) {
   int rollAdj;
   if (i == 1 || i > 3)  {//check idx = 1
@@ -199,11 +195,11 @@ float ServoThread::adjust(byte i) {
     if ((leftQ && Globals::RollPitchDeviation[0] > 0 )
         || ( !leftQ && Globals::RollPitchDeviation[0] < 0))
       leftRightFactor = LEFT_RIGHT_FACTOR;
-    rollAdj = adaptiveCoefficient(i, 0) * leftRightFactor * abs(Globals::RollPitchDeviation[0]);
+    rollAdj = NybbleEEPROM::getAdaptiveCoefficient(i, 0) * leftRightFactor * abs(Globals::RollPitchDeviation[0]);
 
   }
   else
-    rollAdj = adaptiveCoefficient(i, 0) * Globals::RollPitchDeviation[0];
+    rollAdj = NybbleEEPROM::getAdaptiveCoefficient(i, 0) * Globals::RollPitchDeviation[0];
 
-  return 0.1 * ((i > 3 ? postureOrWalkingFactor : 1) * rollAdj + adaptiveCoefficient(i, 1) * Globals::RollPitchDeviation[1]);
+  return 0.1 * ((i > 3 ? postureOrWalkingFactor : 1) * rollAdj + NybbleEEPROM::getAdaptiveCoefficient(i, 1) * Globals::RollPitchDeviation[1]);
 }
