@@ -44,7 +44,7 @@ ServoThread::ServoThread(uint16_t interval) : ProtoThread(interval) {
 }
 
 void ServoThread::initialize() {
-  ptr_eeprom_->assignSkillAddressToOnboardEeprom();
+  NybbleEEPROM::assignSkillAddressToOnboardEeprom();
   PTL();
 
   // servo
@@ -111,7 +111,7 @@ void ServoThread::runLoop() {
   Serial.println(Globals::currTime);
 
   byte firstWalkingJoint = (Globals::motion.period == 1) ? 0 : DOF - WalkingDOF;
-  postureOrWalkingFactor = (Globals::motion.period == 1 ? 1 : POSTURE_WALKING_FACTOR);
+  postureOrWalkingFactor = (Globals::motion.period == 1 ? 1 : WALKING_ROLL_ADJUSTMENT_FACTOR);
   byte jointIdx = firstWalkingJoint;
 
   //motion block
@@ -125,11 +125,11 @@ void ServoThread::runLoop() {
     {
 
       if (jointIdx < firstWalkingJoint && Globals::motion.period > 1) {
-        calibratedPWM(jointIdx, adjust(jointIdx));
+        calibratedPWM(jointIdx, getRollPitchAdjustment(jointIdx));
       }
       else if (jointIdx >= firstWalkingJoint) {
         int dutyIdx = timer * WalkingDOF + jointIdx - firstWalkingJoint;
-        calibratedPWM(jointIdx, Globals::motion.dutyAngles[dutyIdx] + adjust(jointIdx));
+        calibratedPWM(jointIdx, Globals::motion.dutyAngles[dutyIdx] + getRollPitchAdjustment(jointIdx));
       }
       jointIdx++;
 
@@ -168,11 +168,7 @@ void ServoThread::behavior(int n, char** skill, float *speedRatio, int *pause) {
 
 }
 
-int8_t ServoThread::adaptiveCoefficient(byte idx, byte para) {
-  return EEPROM.read(ADAPT_PARAM + idx * NUM_ADAPT_PARAM + para);
-}
-
-float ServoThread::adjust(byte i) {
+float ServoThread::getRollPitchAdjustment(byte i) {
   int rollAdj;
   if (i == 1 || i > 3)  {//check idx = 1
 
@@ -192,18 +188,23 @@ float ServoThread::adjust(byte i) {
     //     |           |             |
     //
 
-    bool leftQ = (i - 1 ) % 4 > 1 ? true : false;
+    bool leftQ = (i - 1 ) % 4 > 1;
     //bool frontQ = i % 4 < 2 ? true : false;
     //bool upperQ = i / 4 < 3 ? true : false;
-    float leftRightFactor = 1;
-    if ((leftQ && Globals::RollPitchDeviation[0] > 0 )
-        || ( !leftQ && Globals::RollPitchDeviation[0] < 0))
-      leftRightFactor = LEFT_RIGHT_FACTOR;
-    rollAdj = adaptiveCoefficient(i, 0) * leftRightFactor * abs(Globals::RollPitchDeviation[0]);
+
+    // If we have a left joint and the deviation is to the left (negative), double the roll adjustment.
+    // Similarly for right joints with positive deviation. This will help to right the cat more quickly.
+    float rollAdjustmentFactor = 1;
+    if (( leftQ && Globals::RollPitchDeviation[0] > 0)
+     || (!leftQ && Globals::RollPitchDeviation[0] < 0))
+      rollAdjustmentFactor = SAME_SIDE_ROLL_ADJUSTMENT_FACTOR;
+    rollAdj = NybbleEEPROM::getAdaptiveCoefficient(i, 0) * rollAdjustmentFactor * abs(Globals::RollPitchDeviation[0]);
 
   }
   else
-    rollAdj = adaptiveCoefficient(i, 0) * Globals::RollPitchDeviation[0];
+    rollAdj = NybbleEEPROM::getAdaptiveCoefficient(i, 0) * Globals::RollPitchDeviation[0];
 
-  return 0.1 * ((i > 3 ? postureOrWalkingFactor : 1) * rollAdj + adaptiveCoefficient(i, 1) * Globals::RollPitchDeviation[1]);
+  // Add the pitch adjustment into the roll adjustment
+  // When we are walking, postureOrWalkingFactor will be <1, so we care less about getting the roll adjustment perfect
+  return 0.1 * ((i > 3 ? postureOrWalkingFactor : 1) * rollAdj + NybbleEEPROM::getAdaptiveCoefficient(i, 1) * Globals::RollPitchDeviation[1]);
 }

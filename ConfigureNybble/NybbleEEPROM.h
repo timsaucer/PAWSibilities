@@ -72,6 +72,15 @@ class NybbleEEPROM {
 
     static void assignSkillAddressToOnboardEeprom();
 
+    /**
+     * The adaptive coefficients determine how much each joint effects the parameter given. For example
+     * getAdaptiveCoefficient(9, 0) would return the coefficient for how much the front right shoulder
+     * joint (index 9) affects the roll of the cat (index 0).
+     * @param joint_index the index of the joint (servo)
+     * @param parameter_index Currently only (0) roll or (1) pitch
+     * @return 10 * the actual coefficient so we can store htis using only 1 byte
+     */
+    static int8_t getAdaptiveCoefficient(byte joint_index, byte parameter_index);
 };
 
 #endif // _EEPROM_READ_WRITE_H_

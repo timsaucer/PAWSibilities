@@ -63,7 +63,6 @@ class ServoThread : public ProtoThread {
     void calibratedPWM(byte i, float angle);
 
   private:
-    NybbleEEPROM* ptr_eeprom_;
 
     uint8_t timer = 0;
     float postureOrWalkingFactor;
@@ -86,9 +85,15 @@ class ServoThread : public ProtoThread {
 
     void behavior(int n, char** skill, float *speedRatio, int *pause);
 
-    int8_t adaptiveCoefficient(byte idx, byte para);
-
-    float adjust(byte i);
+    /**
+     * For the current orientation of the cat relative to expected, get the
+     * angle adjustment for the specified joint. This function compensates for
+     * both roll and pitch, with biases towards righting the cat less in 
+     * walking movements than when standing still (holding a posture).
+     * @param joint_index
+     * @return angle adjustment in degrees
+     */
+    float getRollPitchAdjustment(byte joint_index);
 };
 
 #endif // _SERVO_THREAD_H_
