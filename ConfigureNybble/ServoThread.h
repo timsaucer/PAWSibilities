@@ -86,7 +86,13 @@ class ServoThread : public ProtoThread {
 
     void behavior(int n, char** skill, float *speedRatio, int *pause);
 
-    float adjust(byte i);
+    /**
+     * For the current orientation of the cat relative to expected, get the
+     * angle adjustment for the specified joint.
+     * @param joint_index
+     * @return angle adjustment in degrees
+     */
+    float getRollPitchAdjustment(byte joint_index);
 };
 
 #endif // _SERVO_THREAD_H_

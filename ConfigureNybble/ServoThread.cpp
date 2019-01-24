@@ -125,11 +125,11 @@ void ServoThread::runLoop() {
     {
 
       if (jointIdx < firstWalkingJoint && Globals::motion.period > 1) {
-        calibratedPWM(jointIdx, adjust(jointIdx));
+        calibratedPWM(jointIdx, getRollPitchAdjustment(jointIdx));
       }
       else if (jointIdx >= firstWalkingJoint) {
         int dutyIdx = timer * WalkingDOF + jointIdx - firstWalkingJoint;
-        calibratedPWM(jointIdx, Globals::motion.dutyAngles[dutyIdx] + adjust(jointIdx));
+        calibratedPWM(jointIdx, Globals::motion.dutyAngles[dutyIdx] + getRollPitchAdjustment(jointIdx));
       }
       jointIdx++;
 
@@ -168,7 +168,7 @@ void ServoThread::behavior(int n, char** skill, float *speedRatio, int *pause) {
 
 }
 
-float ServoThread::adjust(byte i) {
+float ServoThread::getRollPitchAdjustment(byte i) {
   int rollAdj;
   if (i == 1 || i > 3)  {//check idx = 1
 
