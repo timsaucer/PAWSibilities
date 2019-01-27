@@ -745,7 +745,8 @@ const char tail_large_wag[] PROGMEM = {
 };
 
 
-#if !defined(MAIN_SKETCH) || !defined(I2C_EEPROM)
+// TODO
+#if !defined(MAIN_SKETCH)
 //if it's not the main sketch to save data or there's no external EEPROM,
 //the list should always contain all information.
 const char* Skills::skillNameWithType[] = {"bdI", "bkI", "bkLI", "bkRI", "crI", "crLI", "crRI", "lyI", "stairN", "trI", "trLI", "trRI", "vtI", "wkFI", "wkLI", "wkRI", "balanceI", "buttUpI", "calibI", "cd1I", "cd2I", "droppedI", "liftedI", "peeI", "pee1I", "pu1I", "pu2I", "rc1I", "rc10I", "rc2I", "rc3I", "rc4I", "rc5I", "rc6I", "rc7I", "rc8I", "rc9I", "restI", "sitI", "sleepI", "strI", "zeroI",};

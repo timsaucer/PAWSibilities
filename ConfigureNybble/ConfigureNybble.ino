@@ -81,13 +81,11 @@ void writeConst() {
 void saveSkillInfoFromProgmemToOnboardEeprom() {
   int skillAddressShift = 0;
   unsigned int i2cEepromAddress = 0; //won't hurt if unused
-#ifdef I2C_EEPROM
   PTLF("\n* Do you need to update Instincts? (Y/n)");
   while (!Serial.available());
   char choice = Serial.read();
   PT(choice == 'Y' ? "Will" : "Won't");
   PTL(" overwrite Instincts on external I2C EEPROM!");
-#endif
   PTLF("Saving skill info...");
   for (byte s = 0; s < NUM_POSTURES; s++) {//save skill info to on-board EEPROM
     byte len = strlen(Skills::skillNameWithType[s]);
@@ -99,14 +97,12 @@ void saveSkillInfoFromProgmemToOnboardEeprom() {
     }
     PTL();
     //PTL("Current EEPROM address is " + String(SKILLS + skillAddressShift));
-#ifdef I2C_EEPROM
     if (!Globals::EEPROMOverflow)
       if (Skills::skillNameWithType[s][len - 1] == 'I' && choice == 'Y') { //  if there's instinct and there's i2c eeprom, and user decide to update.
         // save the data array to i2c eeprom. its address will be saved to onboard eeprom
         NybbleEEPROM::WriteInt(SKILLS + skillAddressShift, i2cEepromAddress);
         NybbleEEPROM::copyDataFromPgmToI2cEeprom(i2cEepromAddress,  (unsigned int) Skills::progmemPointer[s]);
       }
-#endif
     skillAddressShift += 2; // one int (2 bytes) for address
   }
   PTLF("  ******************* Notice! ****************************");
@@ -116,7 +112,6 @@ void saveSkillInfoFromProgmemToOnboardEeprom() {
   PT(" bytes (");
   PT(float(100) * (SKILLS + skillAddressShift) / 1024);
   PTLF(" %)!");
-#ifdef I2C_EEPROM
   if (choice == 'Y') {
     PTF("    Maximal storage of external I2C EEPROM is ");
     PT(EEPROM_SIZE);
@@ -127,7 +122,6 @@ void saveSkillInfoFromProgmemToOnboardEeprom() {
     PT(float(100)*i2cEepromAddress / EEPROM_SIZE);
     PTLF(" %)!");
   }
-#endif
   PTLF("  ********************************************************");
   PTLF("Finished!");
 }
@@ -238,12 +232,12 @@ void setup() {
   while (Serial.available() && Serial.read()); // empty buffer
   PTLF("\n* OpenCat Writing Constants to EEPROM...");
   writeConst(); // only run for the first time when writing to the board.
-//  beep(30);
+  //  beep(30);
   saveSkillInfoFromProgmemToOnboardEeprom();
   NybbleEEPROM::assignSkillAddressToOnboardEeprom();
 
   // TODO
-//  beep(30);
+  //  beep(30);
 
   // start message
   PTLF("\ncalibrate MPU? (Y/n)");
@@ -311,7 +305,7 @@ void loop() {
       //while (1);
       stage = 3;
       // TODO
-//      meow();
+      //      meow();
     }
   }
 
@@ -322,7 +316,7 @@ void loop() {
     newCmd = 3;
   }
   if (newCmd) {
-//    beep(newCmd * 10);
+    //    beep(newCmd * 10);
     // this block handles argumentless tokens
 
     if (token == 'g')
@@ -331,9 +325,9 @@ void loop() {
     //   PTLF("** Help Information **");// print the help document
 
     else if (token == 'd' ) {
-//      TODO
-//      motion.loadBySkillName("rest");
-//      transform(motion.dutyAngles);
+      //      TODO
+      //      motion.loadBySkillName("rest");
+      //      transform(motion.dutyAngles);
       PTLF("shut down servos");
       servoThread.shutServos();
     }
@@ -365,9 +359,9 @@ void loop() {
       if (token == 'c') {
         //PTLF("calibrating [ targetIdx, angle ]: ");
         if (strcmp(lastCmd, "c")) { //first time entering the calibration function
-//          TODO 
-//          motion.loadBySkillName("calib");
-//          transform(motion.dutyAngles);
+          //          TODO
+          //          motion.loadBySkillName("calib");
+          //          transform(motion.dutyAngles);
           servoThread.shutServos();
         }
         if (inLen == 2)
@@ -379,23 +373,23 @@ void loop() {
         }
         PTL();
         // TODO
-//        printList(servoCalibs);
+        //        printList(servoCalibs);
         yield();
 
       }
       else if (token == 'm') {
         //PTLF("moving [ targetIdx, angle ]: ");
-//        TODO
-//        motion.dutyAngles[target[0]] = target[1];
+        //        TODO
+        //        motion.dutyAngles[target[0]] = target[1];
       }
       PT(token);
       // TODO
-//      printList(target, 2);
+      //      printList(target, 2);
 
-// TODO
-//      int duty = SERVOMIN + PWM_RANGE / 2 + float(middleShift(target[0])  + servoCalibs[target[0]] + motion.dutyAngles[target[0]]) * pulsePerDegree[target[0]] * rotationDirection(target[0]) ;
-// TODO
-//      pwm.setPWM(pin(target[0]), 0,  duty);
+      // TODO
+      //      int duty = SERVOMIN + PWM_RANGE / 2 + float(middleShift(target[0])  + servoCalibs[target[0]] + motion.dutyAngles[target[0]]) * pulsePerDegree[target[0]] * rotationDirection(target[0]) ;
+      // TODO
+      //      pwm.setPWM(pin(target[0]), 0,  duty);
 
     }
 
@@ -416,11 +410,11 @@ void loop() {
 
       if (token == 'k') { //validating key
         // TODO
-//        motion.loadBySkillName(cmd);
+        //        motion.loadBySkillName(cmd);
         //motion.info();
         // TODO: This is a check for debug only
-//        PTF("free memory: ");
-//        PTL(freeMemory());
+        //        PTF("free memory: ");
+        //        PTL(freeMemory());
         timer = 0;
         if (strcmp(cmd, "balance") && strcmp(cmd, "lifted") && strcmp(cmd, "dropped") )
           strcpy(lastCmd, cmd);
@@ -428,9 +422,9 @@ void loop() {
         // if gait, walking DOF = 8, start jointIdx from 8
         //          walking DOF = 12, start jointIdx from 4
         // TODO
-//        firstValidJoint = (motion.period == 1) ? 0 : DOF - WalkingDOF;
-//        jointIdx = firstValidJoint;
-//        transform( motion.dutyAngles, firstValidJoint, 2);
+        //        firstValidJoint = (motion.period == 1) ? 0 : DOF - WalkingDOF;
+        //        jointIdx = firstValidJoint;
+        //        transform( motion.dutyAngles, firstValidJoint, 2);
         if (!strcmp(cmd, "rest")) {
           servoThread.shutServos();
           token = 'd';
@@ -449,7 +443,7 @@ void loop() {
       mpu.getMotion6(ag, ag + 1, ag + 2, ag + 3, ag + 4, ag + 5);
       PTLF("ax\tay\taz\tgx\tgy\tgz: ");
       // TODO
-//      printList(ag, 6);
+      //      printList(ag, 6);
     }
 
     if (token == 'k') {
@@ -563,7 +557,7 @@ void calibration() {
       int tolerance = (i < 3) ? acel_deadzone : giro_deadzone;
       if (abs((i == 2 ? 16384 : 0) - agMean[i]) <= tolerance) {
         PT(i + 1);
-//        beep(i * 2 + (i == 3 ? 0 : 1), 100, 10); // note F to G takes half tone
+        //        beep(i * 2 + (i == 3 ? 0 : 1), 100, 10); // note F to G takes half tone
         ready++;
       }
       else {
@@ -637,7 +631,7 @@ void calibration() {
 
     if (ready == 6) {
       delay(500);
-//      beep(100, 1000); // Is the beeping really necessary?
+      //      beep(100, 1000); // Is the beeping really necessary?
       break;
     }
   }

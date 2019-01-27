@@ -112,13 +112,11 @@ void NybbleEEPROM::assignSkillAddressToOnboardEeprom() {
       PTL();*/
     skillAddressShift += nameLen;
     char skillType = EEPROM.read(SKILLS + skillAddressShift++);
-#ifdef I2C_EEPROM
     if (skillType == 'N') // the address of I(nstinct) has been written in previous operation: saveSkillNameFromProgmemToOnboardEEPROM() in instinct.ino
       // if skillType == N(ewbility), save pointer address of progmem data array to onboard eeprom.
       // it has to be done for different sketches because the addresses are dynamically assigned
-#endif
       WriteInt(SKILLS + skillAddressShift, (int)Skills::progmemPointer[s]);
-#if defined(I2C_EEPROM) && defined (MAIN_SKETCH)
+#if defined (MAIN_SKETCH)
     else
       s--;
 #endif

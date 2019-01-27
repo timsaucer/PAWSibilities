@@ -42,8 +42,6 @@
 #define _SKILLS_H_
 
 #define WalkingDOF 8
-#define I2C_EEPROM
-
 
 class Skills {
 

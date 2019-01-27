@@ -119,12 +119,10 @@ void Motion::loadDataByOnboardEepromAddress(int onBoardEepromAddress) {
   delete[] dutyAngles;
   /*PTF("free memory: ");
     PTL(freeMemory());*/
-#ifdef I2C_EEPROM
   if (skillType == 'I') { //copy instinct data array from external i2c eeprom
     loadDataFromI2cEeprom(dataArrayAddress);
   }
   else                    //copy newbility data array from progmem
-#endif
   {
     loadDataFromProgmem(dataArrayAddress) ;
   }
