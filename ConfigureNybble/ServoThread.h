@@ -63,6 +63,8 @@ class ServoThread : public ProtoThread {
     void calibratedPWM(byte i, float angle);
 
   private:
+    // Current angle each joint should move to
+    float duty_angles[16];
 
     uint8_t timer = 0;
     float postureOrWalkingFactor;
@@ -72,14 +74,16 @@ class ServoThread : public ProtoThread {
     char currentAng[DOF] = {};
     int calibratedDuty0[DOF] = {};
 
-    // called this way, it uses the default address 0x40
-    Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
-    // you can also call it with a different address you want
-    //Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x41);
+    // 0x40 is the default address for the servo driver
+    Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x40);
 
     void runLoop();
 
-    void allCalibratedPWM(float * dutyAng);
+    /**
+     * This function will move each servo to the value in duty_angles,
+     * using the calibration and IMU compensation.
+     */
+    void moveToCalibratedPositions();
 
     void transform(char * target,  float speedRatio = 1, byte offset = 0);
 

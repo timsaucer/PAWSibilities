@@ -47,8 +47,24 @@
 #include "Macros.h"
 #include "Enums.h"
 
+/**
+ * Motion describes the current motion the Nybble is trying to perform. There are two basic
+ * types of motion: Posture and Movement. Posture is where we attempt to hold one position, 
+ * and movement is where we are trying to walk. Movements are cyclic (run in a continual loop).
+ * Movement is further broken down into Head, Tail, and Legs. Each is independent of the others.
+ */
+ 
 class Motion {
   public:
+    // At the time of this writing we had 25 postures, 16 leg movements, 6 head movements, and 3 tail movements.
+    // Storing these as enums will use the minimum number of bytes. To save on SRAM usage, we reuse the Posture
+    // data member to represent the leg movement also.
+    
+    bool is_posture;
+    Posture posture_or_leg_skill;
+    HeadMovement head_skill;
+    TailMovement tail_skill;
+  
     byte pins[DOF];
     uint8_t period;
     int8_t expectedRollPitch[2];
@@ -64,7 +80,15 @@ class Motion {
 
     void loadDataByOnboardEepromAddress(int onBoardEepromAddress);
 
-    void loadBySkillName(char* skillName);
+    /**
+     * Load the associated posture skill.
+     */
+    void loadPostureSkill(Posture posture);
+    
+    /**
+     * Load the associated movement skills.
+     */
+    void loadMovementSkill(LegMovement leg_movement, HeadMovement head_movement, TailMovement tail_movement);
     
     void info();
     

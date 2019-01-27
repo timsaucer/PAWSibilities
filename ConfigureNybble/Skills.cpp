@@ -683,6 +683,68 @@ const char zero[] PROGMEM = {
   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
 };
 
+const char head_still[] PROGMEM = {
+  1,
+  0, 0,
+};
+
+const char head_no[] PROGMEM = {
+  2,
+  -15, 0,
+   15, 0,
+};
+
+const char head_yes[] PROGMEM = {
+  2,
+  0,  15,
+  0, -15,
+};
+
+const char head_scan_figure_8[] PROGMEM = {
+  4,
+  -15, -15,
+  -15,  15,
+   15, -15,
+   15,  15,
+};
+
+const char head_small_circle[] PROGMEM = {
+   8,
+   0, 10,
+   5,  5,
+  10,  0,
+   5, -5,
+   0,-10,
+  -5, -5,
+ -10,  0,
+  -5,  5,
+};
+
+const char head_large_circle[] PROGMEM = {
+   8,
+   0, 20,
+  10, 10,
+  20,  0,
+  10,-10,
+   0,-20,
+ -10,-10,
+ -20,  0,
+ -10, 10,
+};
+
+const char tail_still[] PROGMEM = {
+  1, 0
+};
+
+const char tail_small_wag[] PROGMEM = {
+  2, 5, -5,
+};
+
+const char tail_large_wag[] PROGMEM = {
+  2, 15, -15,
+};
+
+
 #if !defined(MAIN_SKETCH) || !defined(I2C_EEPROM)
 //if it's not the main sketch to save data or there's no external EEPROM,
 //the list should always contain all information.

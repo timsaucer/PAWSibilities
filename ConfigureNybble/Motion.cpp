@@ -51,7 +51,7 @@ Motion::Motion() :
 
 int Motion::lookupAddressByName(char* skillName) {
   int skillAddressShift = 0;
-  for (byte s = 0; s < NUM_SKILLS; s++) {//save skill info to on-board EEPROM, load skills to SkillList
+  for (byte s = 0; s < NUM_POSTURES; s++) {//save skill info to on-board EEPROM, load skills to SkillList
     byte nameLen = EEPROM.read(SKILLS + skillAddressShift++);
     char* readName = new char[nameLen + 1];
     for (byte l = 0; l < nameLen; l++) {
@@ -132,12 +132,18 @@ void Motion::loadDataByOnboardEepromAddress(int onBoardEepromAddress) {
     PTL(freeMemory());*/
 }
 
-void Motion::loadBySkillName(char* skillName) {//get lookup information from on-board EEPROM and read the data array from storage
-  int onBoardEepromAddress = lookupAddressByName(skillName);
+void Motion::loadPostureSkill(Posture posture) {
+  //  TODO: Fix this
+  int onBoardEepromAddress = lookupAddressByName((int) posture);
   if (onBoardEepromAddress == -1)
     return;
   loadDataByOnboardEepromAddress(onBoardEepromAddress);
 }
+
+void Motion::loadMovementSkill(LegMovement leg_movement, HeadMovement head_movement, TailMovement tail_movement) {
+  // TODO
+}
+
 
 /*    void loadBySkillPtr(Skill* sk) {//obsolete. get lookup information from a skill pointer and read the data array from storage
       loadDataByOnboardEepromAddress(sk->onBoardEepromAddress);

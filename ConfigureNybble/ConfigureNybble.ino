@@ -89,7 +89,7 @@ void saveSkillInfoFromProgmemToOnboardEeprom() {
   PTL(" overwrite Instincts on external I2C EEPROM!");
 #endif
   PTLF("Saving skill info...");
-  for (byte s = 0; s < NUM_SKILLS; s++) {//save skill info to on-board EEPROM
+  for (byte s = 0; s < NUM_POSTURES; s++) {//save skill info to on-board EEPROM
     byte len = strlen(Skills::skillNameWithType[s]);
     EEPROM.update(SKILLS + skillAddressShift++, len - 1); //the last char in name denotes skill type, I(nstinct) on external eeprom, N(ewbility) on progmem
     PT(Skills::skillNameWithType[s][len - 1] == 'I' ? "I nstinct:\t" : "N ewbility:\t");
