@@ -120,9 +120,9 @@ void saveInstinctsToEeprom() {
   if (choice == 'Y') {
     PTLF("Saving skill info...");
     saveInstinctToEeprom(postures, NUM_POSTURES, onboard_eeprom_address, i2c_eeprom_address);
-    saveInstinctToEeprom(leg_instincts, NUM_LEG_MOVEMENTS, onboard_eeprom_address, i2c_eeprom_address);
-    saveInstinctToEeprom(head_instincts, NUM_HEAD_MOVEMENTS, onboard_eeprom_address, i2c_eeprom_address);
-    saveInstinctToEeprom(tail_instincts, NUM_TAIL_MOVEMENTS, onboard_eeprom_address, i2c_eeprom_address);
+    saveInstinctToEeprom(leg_instincts, NUM_INSTINCTS_LEGS, onboard_eeprom_address, i2c_eeprom_address);
+    saveInstinctToEeprom(head_instincts, NUM_INSTINCTS_HEAD, onboard_eeprom_address, i2c_eeprom_address);
+    saveInstinctToEeprom(tail_instincts, NUM_INSTINCTS_TAIL, onboard_eeprom_address, i2c_eeprom_address);
 
     PTLF("  ******************* Notice! ****************************");
     PTLF("    Maximal storage of onboard EEPROM is 1024 bytes.");

@@ -56,7 +56,7 @@ void ServoThread::initialize() {
   //meow();
   Globals::lastCommand = COMMAND_REST;
   //      strcpy(lastCmd, "rest");
-  Globals::motion.loadSkill(POSTURE_INSTINCT, POSTURE_REST);
+  Globals::motion.loadSkill(INSTINCT_POSTURE, POSTURE_REST);
   for (int8_t i = DOF - 1; i >= 0; i--) {
     pulsePerDegree[i] = float(PWM_RANGE) / servoAngleRange(i);
     servoCalibs[i] = servoCalib(i);
