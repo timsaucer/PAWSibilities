@@ -49,20 +49,7 @@
 
 ServoThread servoThread(0);
 
-// The following arrays must match exactly with the enum order!
-
-const char* postures[] = { calib, cd1, cd2, dropped, lifted, pee, pee1, pu1, pu2, rc1, rc10, rc2, rc3, rc4, rc5, rc6, rc7, rc8, rc9, rest, sit, sleep, str, };
-const char* leg_instincts[] = { bd, bk, bkL, bkR, cr, crL, crR, ly, tr, trL, trR, vt, wkF, wkL, wkR, balance, buttUp, };
-const char* head_instincts[] = { head_still, head_no, head_yes, head_scan_figure_8, head_small_circle, head_large_circle, };
-const char* tail_instincts[] = { tail_still, tail_small_wag, tail_large_wag, };
-
-
-void saveMPUcalib(int * var) {
-  for (byte i = 0; i < 6; i++)
-    EEPROM.update(MPUCALIB + i, var[i]);
-}
-
-void writeConst() {
+void writeConstantsToOnboardEeprom() {
   EEPROM.update(MELODY, sizeof(melody));
   for (byte i = 0; i < sizeof(melody); i++)
     EEPROM.update(MELODY - 1 - i, melody[i]);
@@ -250,7 +237,7 @@ void setup() {
   // wait for ready
   while (Serial.available() && Serial.read()); // empty buffer
   PTLF("\n* OpenCat Writing Constants to EEPROM...");
-  writeConst(); // only run for the first time when writing to the board.
+  writeConstantsToOnboardEeprom(); // only run for the first time when writing to the board.
   //  beep(30);
   saveInstinctsToEeprom();
   NybbleEEPROM::assignSkillAddressToOnboardEeprom();

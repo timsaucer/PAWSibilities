@@ -743,4 +743,11 @@ const char tail_large_wag[] PROGMEM = {
   2, 15, -15,
 };
 
+// The following arrays must match exactly with the enum order!
+
+const char* postures[] = { calib, cd1, cd2, dropped, lifted, pee, pee1, pu1, pu2, rc1, rc10, rc2, rc3, rc4, rc5, rc6, rc7, rc8, rc9, rest, sit, sleep, str, };
+const char* leg_instincts[] = { bd, bk, bkL, bkR, cr, crL, crR, ly, tr, trL, trR, vt, wkF, wkL, wkR, balance, buttUp, };
+const char* head_instincts[] = { head_still, head_no, head_yes, head_scan_figure_8, head_small_circle, head_large_circle, };
+const char* tail_instincts[] = { tail_still, tail_small_wag, tail_large_wag, };
+
 #endif // _INSTINCTS_H_
