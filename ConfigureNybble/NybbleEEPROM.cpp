@@ -42,7 +42,7 @@
 #include "NybbleEEPROM.h"
 #include "Globals.h"
 
-void NybbleEEPROM::WriteInt(int address, int value)
+void NybbleEEPROM::WriteIntToOnboardEEPROM(int address, int value)
 {
   byte highByte = ((value >> 8) & 0xFF);
   byte lowByte = ((value >> 0) & 0xFF);
@@ -51,7 +51,7 @@ void NybbleEEPROM::WriteInt(int address, int value)
   EEPROM.update(address + 1, lowByte);
 }
 
-int NybbleEEPROM::ReadInt(int address)
+int NybbleEEPROM::ReadIntFromOnboardEEPROM(int address)
 {
   byte highByte = EEPROM.read(address);
   byte lowByte  = EEPROM.read(address + 1);
@@ -115,7 +115,7 @@ void NybbleEEPROM::assignSkillAddressToOnboardEeprom() {
     if (skillType == 'N') // the address of I(nstinct) has been written in previous operation: saveSkillNameFromProgmemToOnboardEEPROM() in instinct.ino
       // if skillType == N(ewbility), save pointer address of progmem data array to onboard eeprom.
       // it has to be done for different sketches because the addresses are dynamically assigned
-      WriteInt(SKILLS + skillAddressShift, (int)Skills::progmemPointer[s]);
+      WriteIntToOnboardEEPROM(SKILLS + skillAddressShift, (int)Skills::newbilities[s]);
 #if defined (MAIN_SKETCH)
     else
       s--;

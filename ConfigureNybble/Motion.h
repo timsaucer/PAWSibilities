@@ -74,7 +74,6 @@ class Motion {
     uint8_t tail_period;
     
     int8_t expectedRollPitch[2];
-    char* dutyAngles;
     
     Motion();
 

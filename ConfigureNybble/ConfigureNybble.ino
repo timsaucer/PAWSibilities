@@ -42,13 +42,19 @@
 #include "Constants.h"
 #include "Globals.h"
 #include "Enums.h"
-#include "SerialThread.h"
+#include "Instincts.h"
 
+#include "SerialThread.h"
 #include "ServoThread.h"
 
 ServoThread servoThread(0);
 
-#define INSTINCT_SKETCH
+// The following arrays must match exactly with the enum order!
+
+const char* postures[] = { calib, cd1, cd2, dropped, lifted, pee, pee1, pu1, pu2, rc1, rc10, rc2, rc3, rc4, rc5, rc6, rc7, rc8, rc9, rest, sit, sleep, str, };
+const char* leg_instincts[] = { bd, bk, bkL, bkR, cr, crL, crR, ly, tr, trL, trR, vt, wkF, wkL, wkR, balance, buttUp, };
+const char* head_instincts[] = { head_still, head_no, head_yes, head_scan_figure_8, head_small_circle, head_large_circle, };
+const char* tail_instincts[] = { tail_still, tail_small_wag, tail_large_wag, };
 
 
 void saveMPUcalib(int * var) {
@@ -78,9 +84,16 @@ void writeConst() {
   }
   //PTL();
 }
-void saveSkillInfoFromProgmemToOnboardEeprom() {
+
+/**
+ * Store the instincts currently in memory to the I2C EEPROM and their address to
+ * the onboard EEPROM.
+ */
+ 
+void saveInstinctsToEeprom() {
   int skillAddressShift = 0;
-  unsigned int i2cEepromAddress = 0; //won't hurt if unused
+  unsigned int i2cEepromAddress = 0;
+  // TODO : Clean up parsing input from serial
   PTLF("\n* Do you need to update Instincts? (Y/n)");
   while (!Serial.available());
   char choice = Serial.read();
@@ -88,22 +101,13 @@ void saveSkillInfoFromProgmemToOnboardEeprom() {
   PTL(" overwrite Instincts on external I2C EEPROM!");
   PTLF("Saving skill info...");
   for (byte s = 0; s < NUM_POSTURES; s++) {//save skill info to on-board EEPROM
-    byte len = strlen(Skills::skillNameWithType[s]);
-    EEPROM.update(SKILLS + skillAddressShift++, len - 1); //the last char in name denotes skill type, I(nstinct) on external eeprom, N(ewbility) on progmem
-    PT(Skills::skillNameWithType[s][len - 1] == 'I' ? "I nstinct:\t" : "N ewbility:\t");
-    for (byte l = 0; l < len; l++) {
-      PT(Skills::skillNameWithType[s][l]);
-      EEPROM.update(SKILLS + skillAddressShift++, Skills::skillNameWithType[s][l]);
+    // Each posture consists of 16 
+    if (! Globals::EEPROMOverflow) {
+      NybbleEEPROM::WriteIntToOnboardEEPROM(SKILLS + 2*s, i2cEepromAddress);
+
+      // Note: the following will update i2cEepromAddress with the next available address.
+      NybbleEEPROM::copyDataFromPgmToI2cEeprom(i2cEepromAddress,  (unsigned int) postures[s]);
     }
-    PTL();
-    //PTL("Current EEPROM address is " + String(SKILLS + skillAddressShift));
-    if (!Globals::EEPROMOverflow)
-      if (Skills::skillNameWithType[s][len - 1] == 'I' && choice == 'Y') { //  if there's instinct and there's i2c eeprom, and user decide to update.
-        // save the data array to i2c eeprom. its address will be saved to onboard eeprom
-        NybbleEEPROM::WriteInt(SKILLS + skillAddressShift, i2cEepromAddress);
-        NybbleEEPROM::copyDataFromPgmToI2cEeprom(i2cEepromAddress,  (unsigned int) Skills::progmemPointer[s]);
-      }
-    skillAddressShift += 2; // one int (2 bytes) for address
   }
   PTLF("  ******************* Notice! ****************************");
   PTLF("    Maximal storage of onboard EEPROM is 1024 bytes.");
@@ -233,7 +237,7 @@ void setup() {
   PTLF("\n* OpenCat Writing Constants to EEPROM...");
   writeConst(); // only run for the first time when writing to the board.
   //  beep(30);
-  saveSkillInfoFromProgmemToOnboardEeprom();
+  saveInstinctsToEeprom();
   NybbleEEPROM::assignSkillAddressToOnboardEeprom();
 
   // TODO
@@ -293,7 +297,7 @@ void loop() {
       PTLF("The offsets are saved and automatically sent to mpu.setXAccelOffset(yourOffset)\n");
       for (byte i = 0; i < 6; i++) {
         mpuOffset[i] = agOffset[i];
-        NybbleEEPROM::WriteInt(MPUCALIB + i * 2, mpuOffset[i]);
+        NybbleEEPROM::WriteIntToOnboardEEPROM(MPUCALIB + i * 2, mpuOffset[i]);
       }
 
       mpu.setXAccelOffset(agOffset[0]);
@@ -466,7 +470,7 @@ void loop() {
         jointIdx = 8;
 #endif
       int dutyIdx = timer * WalkingDOF + jointIdx - firstValidJoint;
-      servoThread.calibratedPWM(jointIdx, Globals::motion.dutyAngles[dutyIdx] );
+      servoThread.calibratedPWM(jointIdx, Globals::motion.leg_duty_angles[dutyIdx] );
       jointIdx++;
 
       if (jointIdx == DOF) {

@@ -44,8 +44,7 @@
 Motion::Motion() :
   leg_period(1),
   head_period(1),
-  tail_period(1),
-  dutyAngles(NULL)
+  tail_period(1)
 {
   expectedRollPitch[0] = 0;
   expectedRollPitch[1] = 0;
@@ -78,9 +77,8 @@ void Motion::loadDataFromProgmem(unsigned int progmem_address) {
   byte frameSize = leg_period > 1 ? WalkingDOF : 16;
   int len = leg_period * frameSize;
   //delete []dutyAngles; //check here
-  dutyAngles = new char[len];
   for (int k = 0; k < len; k++) {
-    dutyAngles[k] = pgm_read_byte(progmem_address + SKILL_HEADER + k);
+    leg_duty_angles[k] = pgm_read_byte(progmem_address + SKILL_HEADER + k);
   }
 }
 
@@ -96,8 +94,6 @@ void Motion::loadDataFromI2cEeprom(unsigned int &eeAddress) {
     expectedRollPitch[i] = Wire.read();
   byte frameSize = leg_period > 1 ? WalkingDOF : 16;
   int len = leg_period * frameSize;
-  //delete []dutyAngles;//check here
-  dutyAngles = new char[len];
 
   int readFromEE = 0;
   int readToWire = 0;
@@ -106,7 +102,7 @@ void Motion::loadDataFromI2cEeprom(unsigned int &eeAddress) {
     Wire.requestFrom(DEVICE_ADDRESS, min(WIRE_BUFFER, len));
     readToWire = 0;
     do {
-      if (Wire.available()) dutyAngles[readFromEE++] = Wire.read();
+      if (Wire.available()) leg_duty_angles[readFromEE++] = Wire.read();
       /*PT( (int8_t)dutyAngles[readFromEE - 1]);
         PT('\t')*/
     } while (--len > 0 && ++readToWire < WIRE_BUFFER);
@@ -116,18 +112,13 @@ void Motion::loadDataFromI2cEeprom(unsigned int &eeAddress) {
 }
 
 void Motion::loadDataByOnboardEepromAddress(SkillType skill_type, unsigned int onBoardEepromAddress) {
-  unsigned int dataArrayAddress = NybbleEEPROM::ReadInt(onBoardEepromAddress);
-  delete[] dutyAngles;
-  /*PTF("free memory: ");
-    PTL(freeMemory());*/
+  unsigned int dataArrayAddress = NybbleEEPROM::ReadIntFromOnboardEEPROM(onBoardEepromAddress);
   if (skill_type == LEG_MOVEMENT_NEWBILITY) { // load newbility data from progmem
     loadDataFromProgmem(dataArrayAddress) ;
   }
   else { // load instinct data array from external i2c eeprom
     loadDataFromI2cEeprom(dataArrayAddress);
   }
-  /*PTF("free memory: ");
-    PTL(freeMemory());*/
 }
 
 void Motion::loadSkill(SkillType skill_type, unsigned int skill) {

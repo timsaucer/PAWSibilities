@@ -62,7 +62,7 @@ void ServoThread::initialize() {
     servoCalibs[i] = servoCalib(i);
     calibratedDuty0[i] =  SERVOMIN + PWM_RANGE / 2 + float(middleShift(i) + servoCalibs[i]) * pulsePerDegree[i]  * rotationDirection(i) ;
     //PTL(SERVOMIN + PWM_RANGE / 2 + float(middleShift(i) + servoCalibs[i]) * pulsePerDegree[i] * rotationDirection(i) );
-    calibratedPWM(i, Globals::motion.dutyAngles[i]);
+    calibratedPWM(i, Globals::motion.leg_duty_angles[i]);
     delay(100);
   }
   randomSeed(analogRead(0));//use the fluctuation of voltage caused by servos as entropy pool
@@ -139,7 +139,7 @@ void ServoThread::runLoop() {
   }
   else if (jointIdx >= firstWalkingJoint) {
     int dutyIdx = timer * WalkingDOF + jointIdx - firstWalkingJoint;
-    calibratedPWM(jointIdx, Globals::motion.dutyAngles[dutyIdx] + getRollPitchAdjustment(jointIdx));
+    calibratedPWM(jointIdx, Globals::motion.leg_duty_angles[dutyIdx] + getRollPitchAdjustment(jointIdx));
   }
   jointIdx++;
 
@@ -171,7 +171,7 @@ void ServoThread::behavior(int n, char** skill, float *speedRatio, int *pause) {
   for (byte i = 0; i < n; i++) {
     // TODO
 //    Globals::motion.loadBySkillName(skill[i]);
-    transform(Globals::motion.dutyAngles, speedRatio[i]);
+//    transform(Globals::motion.leg_duty_angles, speedRatio[i]);
     delay(pause[i]);
   }
 

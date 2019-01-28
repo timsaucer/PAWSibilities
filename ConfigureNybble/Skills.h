@@ -47,8 +47,7 @@ class Skills {
 
   public:
 
-    static const char* Skills::skillNameWithType[];
-    static const char* Skills::progmemPointer[];
+    static const char* newbilities[];
 };
 
 #endif // _SKILLS_H_
