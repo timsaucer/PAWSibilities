@@ -86,44 +86,59 @@ void writeConst() {
 }
 
 /**
- * Store the instincts currently in memory to the I2C EEPROM and their address to
- * the onboard EEPROM.
- */
- 
+   Store a single instinct currently in memory to the I2C EEPROM and their address to the
+   onboard EEPROM. This updates both the onboard_eeprom_address and i2c_eeprom_address.
+*/
+
+void saveInstinctToEeprom(char** instinct, byte num_instincts, unsigned int &onboard_eeprom_address, unsigned int &i2c_eeprom_address) {
+  for (byte s = 0; s < num_instincts; s++) {
+    if (! Globals::EEPROMOverflow) {
+      NybbleEEPROM::WriteIntToOnboardEEPROM(onboard_eeprom_address, i2c_eeprom_address);
+
+      // Note: the following will update i2cEepromAddress with the next available address.
+      NybbleEEPROM::copyDataFromPgmToI2cEeprom(i2c_eeprom_address,  (unsigned int) postures[s]);
+
+      onboard_eeprom_address += 2;
+    }
+  }
+}
+
+/**
+   Store the instincts currently in memory to the I2C EEPROM and their address to
+   the onboard EEPROM.
+*/
+
 void saveInstinctsToEeprom() {
-  int skillAddressShift = 0;
-  unsigned int i2cEepromAddress = 0;
+  unsigned int onboard_eeprom_address = SKILLS;
+  unsigned int i2c_eeprom_address = 0;
   // TODO : Clean up parsing input from serial
   PTLF("\n* Do you need to update Instincts? (Y/n)");
   while (!Serial.available());
   char choice = Serial.read();
   PT(choice == 'Y' ? "Will" : "Won't");
   PTL(" overwrite Instincts on external I2C EEPROM!");
-  PTLF("Saving skill info...");
-  for (byte s = 0; s < NUM_POSTURES; s++) {//save skill info to on-board EEPROM
-    // Each posture consists of 16 
-    if (! Globals::EEPROMOverflow) {
-      NybbleEEPROM::WriteIntToOnboardEEPROM(SKILLS + 2*s, i2cEepromAddress);
-
-      // Note: the following will update i2cEepromAddress with the next available address.
-      NybbleEEPROM::copyDataFromPgmToI2cEeprom(i2cEepromAddress,  (unsigned int) postures[s]);
-    }
-  }
-  PTLF("  ******************* Notice! ****************************");
-  PTLF("    Maximal storage of onboard EEPROM is 1024 bytes.");
-  PTF("\tInstinctive dictionary used ");
-  PT(SKILLS + skillAddressShift);
-  PT(" bytes (");
-  PT(float(100) * (SKILLS + skillAddressShift) / 1024);
-  PTLF(" %)!");
   if (choice == 'Y') {
+    PTLF("Saving skill info...");
+    saveInstinctToEeprom(postures, NUM_POSTURES, onboard_eeprom_address, i2c_eeprom_address);
+    saveInstinctToEeprom(leg_instincts, NUM_LEG_MOVEMENTS, onboard_eeprom_address, i2c_eeprom_address);
+    saveInstinctToEeprom(head_instincts, NUM_HEAD_MOVEMENTS, onboard_eeprom_address, i2c_eeprom_address);
+    saveInstinctToEeprom(tail_instincts, NUM_TAIL_MOVEMENTS, onboard_eeprom_address, i2c_eeprom_address);
+
+    PTLF("  ******************* Notice! ****************************");
+    PTLF("    Maximal storage of onboard EEPROM is 1024 bytes.");
+    PTF("\tInstinctive dictionary used ");
+    PT(onboard_eeprom_address);
+    PT(" bytes (");
+    PT(float(100) * (onboard_eeprom_address) / 1024);
+    PTLF(" %)!");
+
     PTF("    Maximal storage of external I2C EEPROM is ");
     PT(EEPROM_SIZE);
     PTLF(" bytes.");
     PT("\tInstinctive data used ");
-    PT(i2cEepromAddress);
+    PT(i2c_eeprom_address);
     PT(" bytes (");
-    PT(float(100)*i2cEepromAddress / EEPROM_SIZE);
+    PT(float(100)*i2c_eeprom_address / EEPROM_SIZE);
     PTLF(" %)!");
   }
   PTLF("  ********************************************************");
