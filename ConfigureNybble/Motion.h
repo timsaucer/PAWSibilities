@@ -60,9 +60,6 @@ class Motion {
     // Storing these as enums will use the minimum number of bytes.
 
     bool is_posture;
-    uint8_t posture_or_leg_skill;
-    HeadInstinct head_skill;
-    TailInstinct tail_skill;
 
     int8_t leg_duty_angles[MAX_LEG_FRAMES * 8];
     int8_t head_duty_angles[MAX_HEAD_FRAMES * 2];
@@ -77,8 +74,6 @@ class Motion {
     int8_t expectedRollPitch[2];
 
     Motion();
-
-    int lookupAddressByName(char* skillName);
 
     /**
        The newbilities are only leg movements. This will copy their data over to the leg_duty_angles

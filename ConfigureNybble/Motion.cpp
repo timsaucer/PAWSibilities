@@ -50,26 +50,6 @@ Motion::Motion() :
   expectedRollPitch[1] = 0;
 }
 
-int Motion::lookupAddressByName(char* skillName) {
-  int skillAddressShift = 0;
-  for (byte s = 0; s < NUM_POSTURES; s++) {//save skill info to on-board EEPROM, load skills to SkillList
-    byte nameLen = EEPROM.read(SKILLS + skillAddressShift++);
-    char* readName = new char[nameLen + 1];
-    for (byte l = 0; l < nameLen; l++) {
-      readName[l] = EEPROM.read(SKILLS + skillAddressShift++);
-    }
-    readName[nameLen] = '\0';
-    if (!strcmp(readName, skillName)) {
-      delete[]readName;
-      return SKILLS + skillAddressShift;
-    }
-    delete[]readName;
-    skillAddressShift += 3;//1 byte type, 1 int address
-  }
-  PTLF("wrong key!");
-  return -1;
-}
-
 void Motion::loadNewbilityFromProgmem(LegNewbilities newbility) {
   char* newbility_array = Skills::newbilities[newbility];
 
@@ -163,13 +143,6 @@ void Motion::loadSkill(SkillType skill_type, unsigned int skill) {
     loadInstinctFromI2cEeprom(skill_type, skill);
   }
 }
-
-
-
-/*    void loadBySkillPtr(Skill* sk) {//obsolete. get lookup information from a skill pointer and read the data array from storage
-      loadDataByOnboardEepromAddress(sk->onBoardEepromAddress);
-    }
-*/
 
 void Motion::info() {
   PTL("leg period: " + String(leg_period) + "\thead period: " + String(head_period) + "\ttail period: " + String(tail_period) + ",\tdelayBetweenFrames: " + ",\texpected (pitch,roll): (" + expectedRollPitch[0] + "," + expectedRollPitch[1] + ")");
