@@ -57,16 +57,18 @@
 class Motion {
   public:
     // At the time of this writing we had 25 postures, 16 leg movements, 6 head movements, and 3 tail movements.
-    // Storing these as enums will use the minimum number of bytes. To save on SRAM usage, we reuse the Posture
-    // data member to represent the leg movement also.
+    // Storing these as enums will use the minimum number of bytes.
     
     bool is_posture;
-    Posture posture_or_leg_skill;
+    uint8_t posture_or_leg_skill;
     HeadMovement head_skill;
     TailMovement tail_skill;
   
     byte pins[DOF];
-    uint8_t period;
+    uint8_t leg_period;
+    uint8_t head_period;
+    uint8_t tail_period;
+    
     int8_t expectedRollPitch[2];
     char* dutyAngles;
     
@@ -78,17 +80,17 @@ class Motion {
     
     void loadDataFromI2cEeprom(unsigned int &eeAddress);
 
-    void loadDataByOnboardEepromAddress(int onBoardEepromAddress);
+    /**
+     * Onboard EEPROM stores the address of the skill in question. This function calls the
+     * appropriate loadDataFrom function after retrieving the address of the skill data.
+     */
+    void loadDataByOnboardEepromAddress(SkillType skill_type, unsigned int onBoardEepromAddress);
 
     /**
-     * Load the associated posture skill.
+     * Load a skill. If the skill is a movement skill (head, tail, or legs) then the last posture of
+     * the other joints will be maintained.
      */
-    void loadPostureSkill(Posture posture);
-    
-    /**
-     * Load the associated movement skills.
-     */
-    void loadMovementSkill(LegMovement leg_movement, HeadMovement head_movement, TailMovement tail_movement);
+    void loadSkill(SkillType skill_type, unsigned int skill);
     
     void info();
     

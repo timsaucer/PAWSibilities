@@ -56,7 +56,7 @@ void ServoThread::initialize() {
   //meow();
   Globals::lastCommand = COMMAND_REST;
   //      strcpy(lastCmd, "rest");
-  Globals::motion.loadPostureSkill(POSTURE_REST);
+  Globals::motion.loadSkill(POSTURE_INSTINCT, POSTURE_REST);
   for (int8_t i = DOF - 1; i >= 0; i--) {
     pulsePerDegree[i] = float(PWM_RANGE) / servoAngleRange(i);
     servoCalibs[i] = servoCalib(i);
@@ -108,8 +108,8 @@ void ServoThread::calibratedPWM(byte i, float angle) {
 
 void ServoThread::runLoop() {
 
-  byte firstWalkingJoint = (Globals::motion.period == 1) ? 0 : DOF - WalkingDOF;
-  postureOrWalkingFactor = (Globals::motion.period == 1 ? 1 : WALKING_ROLL_ADJUSTMENT_FACTOR);
+  byte firstWalkingJoint = (Globals::motion.leg_period == 1) ? 0 : DOF - WalkingDOF;
+  postureOrWalkingFactor = (Globals::motion.leg_period == 1 ? 1 : WALKING_ROLL_ADJUSTMENT_FACTOR);
   byte jointIdx = firstWalkingJoint;
 
   // There are two options for motion:
@@ -134,7 +134,7 @@ void ServoThread::runLoop() {
   // PReviously the loop() would update a single servo at a time. jointIdx causes it to step to the next one.
 
 
-  if (jointIdx < firstWalkingJoint && Globals::motion.period > 1) {
+  if (jointIdx < firstWalkingJoint && Globals::motion.leg_period > 1) {
     calibratedPWM(jointIdx, getRollPitchAdjustment(jointIdx));
   }
   else if (jointIdx >= firstWalkingJoint) {
@@ -146,7 +146,7 @@ void ServoThread::runLoop() {
   if (jointIdx == DOF) {
     jointIdx = 0;
     //PTL((float)analogRead(BATT) *  5.0 / 1024.0*3);
-    timer = (timer + 1) % Globals::motion.period;
+    timer = (timer + 1) % Globals::motion.leg_period;
   }
 }
 

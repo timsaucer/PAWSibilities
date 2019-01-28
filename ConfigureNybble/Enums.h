@@ -41,6 +41,15 @@
 #ifndef _ENUMS_H_
 #define _ENUMS_H_
 
+enum SkillType
+{
+  POSTURE_INSTINCT,
+  LEG_MOVEMENT_INSTINCT,
+  HEAD_MOVEMENT_INSTINCT,
+  TAIL_MOVEMENT_INSTINCT,
+  LEG_MOVEMENT_NEWBILITY,
+};
+
 enum Posture
 {
   POSTURE_BALANCE = 0,       // balance

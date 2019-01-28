@@ -456,7 +456,7 @@ void loop() {
       if (jointIdx == 2)
         jointIdx = 4;
 #endif
-      if (Globals::motion.period != 1) {//skip non-walking DOF
+      if (Globals::motion.leg_period != 1) {//skip non-walking DOF
         if (jointIdx < 4)
           jointIdx = 4;
 
@@ -475,7 +475,7 @@ void loop() {
         if (updateFrame++ == SKIP) {
           updateFrame = 0;
 #endif
-          timer = (timer + 1) % Globals::motion.period;
+          timer = (timer + 1) % Globals::motion.leg_period;
 #ifdef SKIP
         }
 #endif

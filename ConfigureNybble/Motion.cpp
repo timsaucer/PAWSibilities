@@ -42,7 +42,9 @@
 #include "Motion.h"
 
 Motion::Motion() :
-  period(0),
+  leg_period(1),
+  head_period(1),
+  tail_period(1),
   dutyAngles(NULL)
 {
   expectedRollPitch[0] = 0;
@@ -69,16 +71,16 @@ int Motion::lookupAddressByName(char* skillName) {
   return -1;
 }
 
-void Motion::loadDataFromProgmem(unsigned int pgmAddress) {
-  period = pgm_read_byte(pgmAddress);//automatically cast to char*
+void Motion::loadDataFromProgmem(unsigned int progmem_address) {
+  leg_period = pgm_read_byte(progmem_address);
   for (int i = 0; i < 2; i++)
-    expectedRollPitch[i] = pgm_read_byte(pgmAddress + 1 + i);
-  byte frameSize = period > 1 ? WalkingDOF : 16;
-  int len = period * frameSize;
+    expectedRollPitch[i] = pgm_read_byte(progmem_address + 1 + i);
+  byte frameSize = leg_period > 1 ? WalkingDOF : 16;
+  int len = leg_period * frameSize;
   //delete []dutyAngles; //check here
   dutyAngles = new char[len];
   for (int k = 0; k < len; k++) {
-    dutyAngles[k] = pgm_read_byte(pgmAddress + SKILL_HEADER + k);
+    dutyAngles[k] = pgm_read_byte(progmem_address + SKILL_HEADER + k);
   }
 }
 
@@ -88,12 +90,12 @@ void Motion::loadDataFromI2cEeprom(unsigned int &eeAddress) {
   Wire.write((int)((eeAddress) & 0xFF)); // LSB
   Wire.endTransmission();
   Wire.requestFrom(DEVICE_ADDRESS, 3);
-  period = Wire.read();
+  leg_period = Wire.read();
   //PTL("read " + String(period) + " frames");
   for (int i = 0; i < 2; i++)
     expectedRollPitch[i] = Wire.read();
-  byte frameSize = period > 1 ? WalkingDOF : 16;
-  int len = period * frameSize;
+  byte frameSize = leg_period > 1 ? WalkingDOF : 16;
+  int len = leg_period * frameSize;
   //delete []dutyAngles;//check here
   dutyAngles = new char[len];
 
@@ -113,34 +115,29 @@ void Motion::loadDataFromI2cEeprom(unsigned int &eeAddress) {
   //PTLF("finish reading");
 }
 
-void Motion::loadDataByOnboardEepromAddress(int onBoardEepromAddress) {
-  char skillType = EEPROM.read(onBoardEepromAddress);
-  unsigned int dataArrayAddress = NybbleEEPROM::ReadInt(onBoardEepromAddress + 1);
+void Motion::loadDataByOnboardEepromAddress(SkillType skill_type, unsigned int onBoardEepromAddress) {
+  unsigned int dataArrayAddress = NybbleEEPROM::ReadInt(onBoardEepromAddress);
   delete[] dutyAngles;
   /*PTF("free memory: ");
     PTL(freeMemory());*/
-  if (skillType == 'I') { //copy instinct data array from external i2c eeprom
-    loadDataFromI2cEeprom(dataArrayAddress);
-  }
-  else                    //copy newbility data array from progmem
-  {
+  if (skill_type == LEG_MOVEMENT_NEWBILITY) { // load newbility data from progmem
     loadDataFromProgmem(dataArrayAddress) ;
+  }
+  else { // load instinct data array from external i2c eeprom
+    loadDataFromI2cEeprom(dataArrayAddress);
   }
   /*PTF("free memory: ");
     PTL(freeMemory());*/
 }
 
-void Motion::loadPostureSkill(Posture posture) {
+void Motion::loadSkill(SkillType skill_type, unsigned int skill) {
   //  TODO: Fix this
-  int onBoardEepromAddress = lookupAddressByName((int) posture);
+  int onBoardEepromAddress = lookupAddressByName((int) skill);
   if (onBoardEepromAddress == -1)
     return;
-  loadDataByOnboardEepromAddress(onBoardEepromAddress);
+  loadDataByOnboardEepromAddress(skill_type, onBoardEepromAddress);
 }
 
-void Motion::loadMovementSkill(LegMovement leg_movement, HeadMovement head_movement, TailMovement tail_movement) {
-  // TODO
-}
 
 
 /*    void loadBySkillPtr(Skill* sk) {//obsolete. get lookup information from a skill pointer and read the data array from storage
@@ -149,9 +146,10 @@ void Motion::loadMovementSkill(LegMovement leg_movement, HeadMovement head_movem
 */
 
 void Motion::info() {
-  PTL("period: " + String(period) + ",\tdelayBetweenFrames: " + ",\texpected (pitch,roll): (" + expectedRollPitch[0] + "," + expectedRollPitch[1] + ")");
-  for (int k = 0; k < period * (period > 1 ? WalkingDOF : 16); k++) {
-    PT(String((int8_t)dutyAngles[k]) + ", ");
-  }
+  PTL("leg period: " + String(leg_period) + "\thead period: " + String(head_period) + "\ttail period: " + String(tail_period) + ",\tdelayBetweenFrames: " + ",\texpected (pitch,roll): (" + expectedRollPitch[0] + "," + expectedRollPitch[1] + ")");
+//  TODO
+//  for (int k = 0; k < leg_period * (period > 1 ? WalkingDOF : 16); k++) {
+//    PT(String((int8_t)dutyAngles[k]) + ", ");
+//  }
   PTL();
 }
