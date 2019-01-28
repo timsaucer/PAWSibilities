@@ -63,10 +63,10 @@ class NybbleEEPROM {
 
   public:
     //This function will write a 2 byte integer to the eeprom at the specified address and address + 1
-    static void WriteInt(int p_address, int p_value);
+    static void WriteIntToOnboardEEPROM(int p_address, int p_value);
 
     //This function will read a 2 byte integer from the eeprom at the specified address and address + 1
-    static int ReadInt(int p_address);
+    static int ReadIntFromOnboardEEPROM(int p_address);
     
     static void copyDataFromPgmToI2cEeprom(unsigned int &eeAddress, unsigned int pgmAddress);
 

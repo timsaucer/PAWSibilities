@@ -82,14 +82,14 @@ void ImuThread::initialize() {
     // supply your own gyro offsets here, scaled for min sensitivity
 
     for (byte i = 0; i < 4; i++) {
-      PT(NybbleEEPROM::ReadInt(MPUCALIB + 4 + i * 2));
+      PT(NybbleEEPROM::ReadIntFromOnboardEEPROM(MPUCALIB + 4 + i * 2));
       PT(" ");
     }
     PTL();
-    mpu.setZAccelOffset(NybbleEEPROM::ReadInt(MPUCALIB + 4));
-    mpu.setXGyroOffset(NybbleEEPROM::ReadInt(MPUCALIB + 6));
-    mpu.setYGyroOffset(NybbleEEPROM::ReadInt(MPUCALIB + 8));
-    mpu.setZGyroOffset(NybbleEEPROM::ReadInt(MPUCALIB + 10));
+    mpu.setZAccelOffset(NybbleEEPROM::ReadIntFromOnboardEEPROM(MPUCALIB + 4));
+    mpu.setXGyroOffset(NybbleEEPROM::ReadIntFromOnboardEEPROM(MPUCALIB + 6));
+    mpu.setYGyroOffset(NybbleEEPROM::ReadIntFromOnboardEEPROM(MPUCALIB + 8));
+    mpu.setZGyroOffset(NybbleEEPROM::ReadIntFromOnboardEEPROM(MPUCALIB + 10));
     // make sure it worked (returns 0 if so)
     if (devStatus == 0) {
       // turn on the DMP, now that it's ready

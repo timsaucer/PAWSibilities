@@ -41,51 +41,89 @@
 #ifndef _ENUMS_H_
 #define _ENUMS_H_
 
-enum Skill
+enum SkillType
 {
-  INSTINCT_bd = 0, // WHAT IS THIS?
-  INSTINCT_BACK_UP,       // bk
-  INSTINCT_BACK_UP_LEFT , // bkL
-  INSTINCT_BACK_UP_RIGHT, // bkR
-  INSTINCT_CRAWL,         // cr
-  INSTINCT_CRAWL_LEFT,    // crL
-  INSTINCT_CRAWL_RIGHT,   // crR
-  INSTINCT_LAY_DOWN,      // ly
-  INSTINCT_STAIR,         // stair
-  INSTINCT_TROT,          // tr
-  INSTINCT_TROT_LEFT,     // trL
-  INSTINCT_TROT_RIGHT,    // trR
-  INSTINCT_vt, // WHAT IS THIS?
-  INSTINCT_wkF, // WHAT IS THIS?
-  INSTINCT_wkL, // WHAT IS THIS?
-  INSTINCT_wkR, // WHAT IS THIS?
-  INSTINCT_BALANCE,       // balance
-  INSTINCT_BUTT_UP,       // buttUp
-  INSTINCT_CALIB,         // calib
-  INSTINCT_cd1, // WHAT IS THIS?
-  INSTINCT_cd2, // WHAT IS THIS?
-  INSTNCT_DROPPED,        // dropped
-  INSTINCT_LIFTED,        // lifted
-  INSTINCT_PEE,           // pee
-  INSTINCT_pee1, // WHAT IS THIS?
-  INSTINCT_PUSH_UP_1,     // pu1 (Push up, phase 1 of 2)
-  INSTINCT_PUSH_UP_2,     // pu2
-  INSTINCT_RECOVER_1,     // rc1 (Recover: turtle roll, phase 1 of 10)
-  INSTINCT_RECOVER_2,     // rc2
-  INSTINCT_RECOVER_3,     // rc3
-  INSTINCT_RECOVER_4,     // rc4
-  INSTINCT_RECOVER_5,     // rc5
-  INSTINCT_RECOVER_6,     // rc6
-  INSTINCT_RECOVER_7,     // rc7
-  INSTINCT_RECOVER_8,     // rc8
-  INSTINCT_RECOVER_9,     // rc9
-  INSTINCT_RECOVER_10,    // rc10
-  INSTINCT_REST,          // rest
-  INSTINCT_SIT,           // sit
-  INSTINCT_SLEEP,         // sleep
-  INSTINCT_STRETCH,       // str
-  INSTINCT_ZERO,          // zero
-  NUM_SKILLS
+  INSTINCT_POSTURE,
+  INSTINCT_LEG_MOVEMENT,
+  INSTINCT_HEAD_MOVEMENT,
+  INSTINCT_TAIL_MOVEMENT,
+  NEWBILITY_LEG_MOVEMENT,
+};
+
+enum Posture
+{
+  POSTURE_BALANCE = 0,       // balance
+  POSTURE_BUTT_UP,       // buttUp
+  POSTURE_CALIB,         // calib
+  POSTURE_cd1, // WHAT IS THIS?
+  POSTURE_cd2, // WHAT IS THIS?
+  POSTURE_DROPPED,        // dropped
+  POSTURE_LIFTED,        // lifted
+  POSTURE_PEE,           // pee
+  POSTURE_pee1, // WHAT IS THIS?
+  POSTURE_PUSH_UP_1,     // pu1 (Push up, phase 1 of 2)
+  POSTURE_PUSH_UP_2,     // pu2
+  POSTURE_RECOVER_1,     // rc1 (Recover: turtle roll, phase 1 of 10)
+  POSTURE_RECOVER_2,     // rc2
+  POSTURE_RECOVER_3,     // rc3
+  POSTURE_RECOVER_4,     // rc4
+  POSTURE_RECOVER_5,     // rc5
+  POSTURE_RECOVER_6,     // rc6
+  POSTURE_RECOVER_7,     // rc7
+  POSTURE_RECOVER_8,     // rc8
+  POSTURE_RECOVER_9,     // rc9
+  POSTURE_RECOVER_10,    // rc10
+  POSTURE_REST,          // rest
+  POSTURE_SIT,           // sit
+  POSTURE_SLEEP,         // sleep
+  POSTURE_STRETCH,       // str
+  NUM_POSTURES
+};
+
+enum LegInstinct
+{
+  INSTINCT_LEGS_bd = 0, // WHAT IS THIS?
+  INSTINCT_LEGS_BACK_UP,       // bk
+  INSTINCT_LEGS_BACK_UP_LEFT , // bkL
+  INSTINCT_LEGS_BACK_UP_RIGHT, // bkR
+  INSTINCT_LEGS_CRAWL,         // cr
+  INSTINCT_LEGS_CRAWL_LEFT,    // crL
+  INSTINCT_LEGS_CRAWL_RIGHT,   // crR
+  INSTINCT_LEGS_LAY_DOWN,      // ly
+  INSTINCT_LEGS_STAIR,         // stair
+  INSTINCT_LEGS_TROT,          // tr
+  INSTINCT_LEGS_TROT_LEFT,     // trL
+  INSTINCT_LEGS_TROT_RIGHT,    // trR
+  INSTINCT_LEGS_vt, // WHAT IS THIS?
+  INSTINCT_LEGS_wkF, // WHAT IS THIS?
+  INSTINCT_LEGS_wkL, // WHAT IS THIS?
+  INSTINCT_LEGS_wkR, // WHAT IS THIS?
+  NUM_INSTINCTS_LEGS
+};
+
+enum HeadInstinct
+{
+  INSTINCT_HEAD_STILL = 0,
+  INSTINCT_HEAD_NO,
+  INSTINCT_HEAD_YES,
+  INSTINCT_HEAD_FIGURE_8,
+  INSTINCT_HEAD_SMALL_CIRCLE,
+  INSTINCT_HEAD_LARGE_CIRCLE,
+  NUM_INSTINCTS_HEAD
+};
+
+enum TailInstinct
+{
+  INSTINCT_TAIL_STILL = 0,
+  INSTINCT_TAIL_SMALL_WAG,
+  INSTINCT_TAIL_LARGE_WAG,
+  NUM_INSTINCTS_TAIL
+};
+
+enum LegNewbilities
+{
+  NEWBILITY_LEGS_STAIR = 0,         // stair
+  NUM_NEWBILITIES
 };
 
 enum Command

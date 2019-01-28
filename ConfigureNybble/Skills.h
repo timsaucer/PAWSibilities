@@ -42,15 +42,12 @@
 #define _SKILLS_H_
 
 #define WalkingDOF 8
-#define I2C_EEPROM
-
 
 class Skills {
 
   public:
 
-    static const char* Skills::skillNameWithType[];
-    static const char* Skills::progmemPointer[];
+    static const char* newbilities[];
 };
 
 #endif // _SKILLS_H_

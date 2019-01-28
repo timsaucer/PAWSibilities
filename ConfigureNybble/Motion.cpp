@@ -42,112 +42,113 @@
 #include "Motion.h"
 
 Motion::Motion() :
-  period(0),
-  dutyAngles(NULL)
+  leg_period(1),
+  head_period(1),
+  tail_period(1)
 {
   expectedRollPitch[0] = 0;
   expectedRollPitch[1] = 0;
 }
 
-int Motion::lookupAddressByName(char* skillName) {
-  int skillAddressShift = 0;
-  for (byte s = 0; s < NUM_SKILLS; s++) {//save skill info to on-board EEPROM, load skills to SkillList
-    byte nameLen = EEPROM.read(SKILLS + skillAddressShift++);
-    char* readName = new char[nameLen + 1];
-    for (byte l = 0; l < nameLen; l++) {
-      readName[l] = EEPROM.read(SKILLS + skillAddressShift++);
-    }
-    readName[nameLen] = '\0';
-    if (!strcmp(readName, skillName)) {
-      delete[]readName;
-      return SKILLS + skillAddressShift;
-    }
-    delete[]readName;
-    skillAddressShift += 3;//1 byte type, 1 int address
-  }
-  PTLF("wrong key!");
-  return -1;
-}
+void Motion::loadNewbilityFromProgmem(LegNewbilities newbility) {
+  char* newbility_array = Skills::newbilities[newbility];
 
-void Motion::loadDataFromProgmem(unsigned int pgmAddress) {
-  period = pgm_read_byte(pgmAddress);//automatically cast to char*
-  for (int i = 0; i < 2; i++)
-    expectedRollPitch[i] = pgm_read_byte(pgmAddress + 1 + i);
-  byte frameSize = period > 1 ? WalkingDOF : 16;
-  int len = period * frameSize;
-  //delete []dutyAngles; //check here
-  dutyAngles = new char[len];
-  for (int k = 0; k < len; k++) {
-    dutyAngles[k] = pgm_read_byte(pgmAddress + SKILL_HEADER + k);
+  leg_period = newbility_array[0];
+  for (int i = 0; i < 2; i++) {
+    expectedRollPitch[i] = newbility_array[i + 1];
+  }
+
+  for (int j = 0; j < leg_period * 8; j++) {
+    leg_duty_angles[j] = newbility_array[j + 3];
   }
 }
 
-void Motion::loadDataFromI2cEeprom(unsigned int &eeAddress) {
+void Motion::loadPostureFromI2cEeprom(uint16_t onboard_eeprom_address) {
+  int8_t temp_duty_angles[16];
+
+  head_period = 1;
+  tail_period = 1;
+
+  loadInstinctDataFromI2cEeprom(leg_period, true, 16, temp_duty_angles, onboard_eeprom_address);
+  head_duty_angles[0] = temp_duty_angles[JOINT_HEAD_PAN];
+  head_duty_angles[0] = temp_duty_angles[JOINT_HEAD_TILT];
+
+  tail_duty_angles[0] = temp_duty_angles[JOINT_TAIL_PAN];
+  for (int idx = 0; idx < 8; idx++) {
+    leg_duty_angles[idx] = temp_duty_angles[JOINT_FRONT_LEFT_PITCH + idx];
+  }
+}
+
+void Motion::loadInstinctDataFromI2cEeprom(uint8_t &period, bool update_roll_pitch, uint8_t frame_size, int8_t duty_angles[], uint16_t onboard_eeprom_address) {
+  unsigned int i2c_eeprom_address = NybbleEEPROM::ReadIntFromOnboardEEPROM(onboard_eeprom_address);
+
   Wire.beginTransmission(DEVICE_ADDRESS);
-  Wire.write((int)((eeAddress) >> 8));   // MSB
-  Wire.write((int)((eeAddress) & 0xFF)); // LSB
+  Wire.write((int)((i2c_eeprom_address) >> 8));   // MSB
+  Wire.write((int)((i2c_eeprom_address) & 0xFF)); // LSB
   Wire.endTransmission();
-  Wire.requestFrom(DEVICE_ADDRESS, 3);
-  period = Wire.read();
-  //PTL("read " + String(period) + " frames");
-  for (int i = 0; i < 2; i++)
-    expectedRollPitch[i] = Wire.read();
-  byte frameSize = period > 1 ? WalkingDOF : 16;
-  int len = period * frameSize;
-  //delete []dutyAngles;//check here
-  dutyAngles = new char[len];
 
-  int readFromEE = 0;
-  int readToWire = 0;
-  while (len > 0) {
-    //PTL("request " + String(min(WIRE_BUFFER, len)));
-    Wire.requestFrom(DEVICE_ADDRESS, min(WIRE_BUFFER, len));
+  Wire.requestFrom(DEVICE_ADDRESS, 1);
+  period = Wire.read();
+
+  if (update_roll_pitch) {
+    Wire.requestFrom(DEVICE_ADDRESS, 2);
+    for (int i = 0; i < 2; i++)
+      expectedRollPitch[i] = Wire.read();
+  }
+
+  uint16_t length_to_load = period * frame_size;
+
+  uint16_t readFromEE = 0;
+  uint16_t readToWire = 0;
+  while (length_to_load > 0) {
+    Wire.requestFrom(DEVICE_ADDRESS, min(WIRE_BUFFER, length_to_load));
     readToWire = 0;
     do {
-      if (Wire.available()) dutyAngles[readFromEE++] = Wire.read();
-      /*PT( (int8_t)dutyAngles[readFromEE - 1]);
-        PT('\t')*/
-    } while (--len > 0 && ++readToWire < WIRE_BUFFER);
-    //PTL();
+      if (Wire.available()) {
+        duty_angles[readFromEE++] = Wire.read();
+      }
+    } while (--length_to_load > 0 && ++readToWire < WIRE_BUFFER);
+
   }
-  //PTLF("finish reading");
 }
 
-void Motion::loadDataByOnboardEepromAddress(int onBoardEepromAddress) {
-  char skillType = EEPROM.read(onBoardEepromAddress);
-  unsigned int dataArrayAddress = NybbleEEPROM::ReadInt(onBoardEepromAddress + 1);
-  delete[] dutyAngles;
-  /*PTF("free memory: ");
-    PTL(freeMemory());*/
-#ifdef I2C_EEPROM
-  if (skillType == 'I') { //copy instinct data array from external i2c eeprom
-    loadDataFromI2cEeprom(dataArrayAddress);
+void Motion::loadInstinctFromI2cEeprom(SkillType skill_type, unsigned int skill) {
+  unsigned int onboard_eeprom_address = SKILLS + 2 * skill;
+
+  switch (skill_type) {
+    case INSTINCT_POSTURE:
+      loadPostureFromI2cEeprom(onboard_eeprom_address);
+      break;
+    case INSTINCT_LEG_MOVEMENT:
+      onboard_eeprom_address += 2 * NUM_POSTURES;
+      loadInstinctDataFromI2cEeprom(leg_period, true, 8, leg_duty_angles, onboard_eeprom_address);
+      break;
+    case INSTINCT_HEAD_MOVEMENT:
+      onboard_eeprom_address += 2 * (NUM_POSTURES + NUM_INSTINCTS_LEGS);
+      loadInstinctDataFromI2cEeprom(head_period, true, 2, head_duty_angles, onboard_eeprom_address);
+      break;
+    case INSTINCT_TAIL_MOVEMENT:
+      onboard_eeprom_address += 2 * (NUM_POSTURES + NUM_INSTINCTS_LEGS + NUM_INSTINCTS_HEAD);
+      loadInstinctDataFromI2cEeprom(tail_period, true, 1, tail_duty_angles, onboard_eeprom_address);
+      break;
+    default:
+      break;
   }
-  else                    //copy newbility data array from progmem
-#endif
-  {
-    loadDataFromProgmem(dataArrayAddress) ;
-  }
-  /*PTF("free memory: ");
-    PTL(freeMemory());*/
 }
 
-void Motion::loadBySkillName(char* skillName) {//get lookup information from on-board EEPROM and read the data array from storage
-  int onBoardEepromAddress = lookupAddressByName(skillName);
-  if (onBoardEepromAddress == -1)
-    return;
-  loadDataByOnboardEepromAddress(onBoardEepromAddress);
+void Motion::loadSkill(SkillType skill_type, unsigned int skill) {
+  if (skill_type == NEWBILITY_LEG_MOVEMENT) {
+    loadNewbilityFromProgmem(skill);
+  } else {
+    loadInstinctFromI2cEeprom(skill_type, skill);
+  }
 }
-
-/*    void loadBySkillPtr(Skill* sk) {//obsolete. get lookup information from a skill pointer and read the data array from storage
-      loadDataByOnboardEepromAddress(sk->onBoardEepromAddress);
-    }
-*/
 
 void Motion::info() {
-  PTL("period: " + String(period) + ",\tdelayBetweenFrames: " + ",\texpected (pitch,roll): (" + expectedRollPitch[0] + "," + expectedRollPitch[1] + ")");
-  for (int k = 0; k < period * (period > 1 ? WalkingDOF : 16); k++) {
-    PT(String((int8_t)dutyAngles[k]) + ", ");
-  }
+  PTL("leg period: " + String(leg_period) + "\thead period: " + String(head_period) + "\ttail period: " + String(tail_period) + ",\tdelayBetweenFrames: " + ",\texpected (pitch,roll): (" + expectedRollPitch[0] + "," + expectedRollPitch[1] + ")");
+  //  TODO
+  //  for (int k = 0; k < leg_period * (period > 1 ? WalkingDOF : 16); k++) {
+  //    PT(String((int8_t)dutyAngles[k]) + ", ");
+  //  }
   PTL();
 }
