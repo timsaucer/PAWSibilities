@@ -63,6 +63,10 @@ class Motion {
     uint8_t posture_or_leg_skill;
     HeadMovement head_skill;
     TailMovement tail_skill;
+
+    int leg_duty_angles[MAX_LEG_FRAMES * 8];
+    int head_duty_angles[MAX_HEAD_FRAMES * 2];
+    int tail_duty_angles[MAX_TAIL_FRAMES];
   
     byte pins[DOF];
     uint8_t leg_period;
@@ -83,6 +87,8 @@ class Motion {
     /**
      * Onboard EEPROM stores the address of the skill in question. This function calls the
      * appropriate loadDataFrom function after retrieving the address of the skill data.
+     * @param skill_type What type of skill to load (ie: POSTURE_INSTINCT, LEG_MOVEMENT_NEWBILITY)
+     * @param onBoardEepromAddress address of the onboard EEPROM which stores the skill address
      */
     void loadDataByOnboardEepromAddress(SkillType skill_type, unsigned int onBoardEepromAddress);
 
