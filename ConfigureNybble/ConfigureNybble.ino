@@ -186,17 +186,11 @@ int giro_deadzone = 1;   //Giro error allowed, make it lower to get more precisi
 //MPU6050 mpu;
 MPU6050 mpu(0x68); // <-- use for AD0 high
 
-
-byte stage = 0;
 int ag[6];      //int16_t ax, ay, az, gx, gy, gz;
 int agMean[6];  //mean_ax, mean_ay, mean_az, mean_gx, mean_gy, mean_gz;
 int agOffset[6];  //ax_offset, ay_offset, az_offset, gx_offset, gy_offset, gz_offset;
 int mpuOffset[6];
 uint8_t timer = 0;
-#define SKIP 3
-#ifdef SKIP
-byte updateFrame = 0;
-#endif
 byte firstValidJoint;
 char token;
 
@@ -386,37 +380,20 @@ void loop() {
 
     if (token == 'k') {
       // if (lastCmd[0] == 'm' && lastCmd[1] == 'r')
-#ifndef HEAD  //skip head
-      if (jointIdx == 0)
-        jointIdx = 2;
-#endif
-#ifndef TAIL  //skip tail
-      if (jointIdx == 2)
-        jointIdx = 4;
-#endif
       if (Globals::motion.leg_period != 1) {//skip non-walking DOF
         if (jointIdx < 4)
           jointIdx = 4;
 
       }
-#if WalkingDOF==8 //skip shoulder roll 
       if (jointIdx == 4)
         jointIdx = 8;
-#endif
       int dutyIdx = timer * WalkingDOF + jointIdx - firstValidJoint;
       servoThread.calibratedPWM(jointIdx, Globals::motion.leg_duty_angles[dutyIdx] );
       jointIdx++;
 
       if (jointIdx == DOF) {
         jointIdx = 0;
-#ifdef SKIP
-        if (updateFrame++ == SKIP) {
-          updateFrame = 0;
-#endif
-          timer = (timer + 1) % Globals::motion.leg_period;
-#ifdef SKIP
-        }
-#endif
+        timer = (timer + 1) % Globals::motion.leg_period;
       }
     }
   }
