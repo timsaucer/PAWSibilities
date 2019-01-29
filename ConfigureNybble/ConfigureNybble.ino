@@ -204,7 +204,6 @@ char lastCmd[CMD_LEN] = {};
 byte jointIdx = 0;
 
 bool printMPU = false;
-bool calibrate_mpu = false;
 
 void setup() {
 
@@ -242,73 +241,14 @@ void setup() {
 
   // start message
   PTLF("\ncalibrate MPU? (Y/n)");
-  calibrate_mpu = SerialThread::getYesOrNo();
+  bool calibrate_mpu = SerialThread::getYesOrNo();
   PTLF("Gotcha!");
   if (calibrate_mpu) {
-    PTLF("\n* MPU6050 Calibration Routine");
-    delay(2000);
-    // verify connection
-    PTL(mpu.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
-    delay(1000);
-    // reset offsets
-    mpu.setXAccelOffset(0);
-    mpu.setYAccelOffset(0);
-    mpu.setZAccelOffset(0);
-    mpu.setXGyroOffset(0);
-    mpu.setYGyroOffset(0);
-    mpu.setZGyroOffset(0);
+    runMpuCalibrationRoutines();
   }
 }
 
 void loop() {
-
-  if (calibrate_mpu) {
-    if (stage == 0) {
-      PTLF("\nReading sensors for first time...");
-      meansensors();
-      stage++;
-      delay(1000);
-    }
-
-    if (stage == 1) {
-      PTLF("\nYour MPU6050 should be placed in horizontal position, with package letters facing up.");
-      PTLF("Don't touch it until all six numbers appear.");
-      perform_mpu_calibration();
-      stage++;
-      delay(1000);
-    }
-
-    if (stage == 2) {
-      meansensors();
-      PTLF("FINISHED!");
-      PTLF("\nData is printed as:\t\tacelX\tacelY\tacelZ\tgiroX\tgiroY\tgiroZ");
-      PTLF("Readings should be close to:\t0\t0\t16384\t0\t0\t0");
-
-      PTF("Sensor readings with offsets:\t");
-      printList(agMean, 6);
-
-      PTF("Your calibration offsets:\t");
-      printList(agOffset, 6);
-
-      PTLF("The offsets are saved and automatically sent to mpu.setXAccelOffset(yourOffset)\n");
-      for (byte i = 0; i < 6; i++) {
-        mpuOffset[i] = agOffset[i];
-        NybbleEEPROM::WriteIntToOnboardEEPROM(MPUCALIB + i * 2, mpuOffset[i]);
-      }
-
-      mpu.setXAccelOffset(agOffset[0]);
-      mpu.setYAccelOffset(agOffset[1]);
-      mpu.setZAccelOffset(agOffset[2]);
-      mpu.setXGyroOffset(agOffset[3]);
-      mpu.setYGyroOffset(agOffset[4]);
-      mpu.setZGyroOffset(agOffset[5]);
-      //while (1);
-      stage = 3;
-      // TODO
-      //      meow();
-    }
-  }
-
   char cmd[CMD_LEN] = {};
   byte newCmd = 0;
   if (Serial.available() > 0) {
@@ -482,7 +422,7 @@ void loop() {
   }
 }
 
-void meansensors() {
+void meanMpuSensors() {
   long i = 0;
   long agBuff[] = {0, 0, 0, 0, 0, 0}; //buff_ax = 0, buff_ay = 0, buff_az = 0, buff_gx = 0, buff_gy = 0, buff_gz = 0;
 
@@ -504,10 +444,10 @@ void meansensors() {
 }
 
 /**
- * Performs the calibration. This is a blocking loop that keeps going until all 6 
- * axes are within their tolerances.
- */
-void perform_mpu_calibration() {
+   Performs the calibration. This is a blocking loop that keeps going until all 6
+   axes are within their tolerances.
+*/
+void performMpuCalibration() {
   for (int i = 0; i < 6; i++) {
     agOffset[i] = ((i == 2 ? 16384 : 0) - agMean[i]) / 8; //agOffset[2] is az_offset
   }
@@ -521,8 +461,8 @@ void perform_mpu_calibration() {
     mpu.setXGyroOffset(agOffset[3]);
     mpu.setYGyroOffset(agOffset[4]);
     mpu.setZGyroOffset(agOffset[5]);
-    
-    meansensors();
+
+    meanMpuSensors();
 
     for (int i = 0; i < 6; i++) {
       int tolerance = (i < 3) ? acel_deadzone : giro_deadzone;
@@ -539,4 +479,52 @@ void perform_mpu_calibration() {
     PTL();
 
   }
+}
+
+void runMpuCalibrationRoutines() {
+  PTLF("\n* MPU6050 Calibration Routine");
+  delay(2000);
+  // verify connection
+  PTL(mpu.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
+  delay(1000);
+  // reset offsets
+  mpu.setXAccelOffset(0);
+  mpu.setYAccelOffset(0);
+  mpu.setZAccelOffset(0);
+  mpu.setXGyroOffset(0);
+  mpu.setYGyroOffset(0);
+  mpu.setZGyroOffset(0);
+
+  PTLF("\nReading sensors for first time...");
+  meanMpuSensors();
+  delay(1000);
+
+  PTLF("\nYour MPU6050 should be placed in horizontal position, with package letters facing up.");
+  PTLF("Don't touch it until all six numbers appear.");
+  performMpuCalibration();
+  delay(1000);
+
+  meanMpuSensors();
+  PTLF("FINISHED!");
+  PTLF("\nData is printed as:\t\tacelX\tacelY\tacelZ\tgiroX\tgiroY\tgiroZ");
+  PTLF("Readings should be close to:\t0\t0\t16384\t0\t0\t0");
+
+  PTF("Sensor readings with offsets:\t");
+  printList(agMean, 6);
+
+  PTF("Your calibration offsets:\t");
+  printList(agOffset, 6);
+
+  PTLF("The offsets are saved and automatically sent to mpu.setXAccelOffset(yourOffset)\n");
+  for (byte i = 0; i < 6; i++) {
+    mpuOffset[i] = agOffset[i];
+    NybbleEEPROM::WriteIntToOnboardEEPROM(MPUCALIB + i * 2, mpuOffset[i]);
+  }
+
+  mpu.setXAccelOffset(agOffset[0]);
+  mpu.setYAccelOffset(agOffset[1]);
+  mpu.setZAccelOffset(agOffset[2]);
+  mpu.setXGyroOffset(agOffset[3]);
+  mpu.setYGyroOffset(agOffset[4]);
+  mpu.setZGyroOffset(agOffset[5]);
 }
