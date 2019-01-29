@@ -46,6 +46,12 @@ SerialThread::SerialThread(uint16_t interval) : ProtoThread(interval)
 }
 
 void SerialThread::initialize() {
+  Serial.begin(57600);
+  Serial.setTimeout(5);
+  delay(1);
+  
+  while (!Serial)
+    delay(1); // waits until Serial is ready
 }
 
 void SerialThread::runLoop() {

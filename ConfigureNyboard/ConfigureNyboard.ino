@@ -49,8 +49,12 @@
 #include "SerialThread.h"
 #include "ServoThread.h"
 
-ServoThread servoThread(0);
+ServoThread servo_thread(0);
+SerialThread serial_thread(0);
 
+Command curr_command;
+
+// TODO Are these still needed?
 uint8_t timer = 0;
 byte firstValidJoint;
 char token;
@@ -102,7 +106,7 @@ void saveInstinctToEeprom(char** instinct, byte num_instincts, unsigned int &onb
 }
 
 /**
-   Store the instincts currently in memory to the I2C EEPROM and their address to
+   Store all instincts currently in memory to the I2C EEPROM and their address to
    the onboard EEPROM.
 */
 
@@ -143,8 +147,13 @@ void saveInstinctsToEeprom() {
   PTLF("Finished!");
 }
 
+/**
+ * Standard arduino setup function.
+ */
+ 
 void setup() {
 
+  PTLF("\nWelcome to the Nyboard configuration for PAWSibilities!");
   // join I2C bus (I2Cdev library doesn't do this automatically)
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
   Wire.begin();
@@ -153,31 +162,17 @@ void setup() {
   Fastwire::setup(400, true);
 #endif
 
-  Serial.begin(57600);
-  Serial.setTimeout(5);
-  delay(1);
-  while (!Serial);//check here
-  /*PTLF("MPU calibration data");
-    for (byte i = 0; i < 6; i++){
-    PTL(EEPROMReadInt(MPUCALIB + i * 2));
-    PT("\t");
-    }
-    PTL();*/
-  // initialize device
+  serial_thread.initialize();
   mpu.initialize();
 
   // wait for ready
   while (Serial.available() && Serial.read()); // empty buffer
-  PTLF("\n* OpenCat Writing Constants to EEPROM...");
+  PTLF("\n* Writing Constants to EEPROM...");
   writeConstantsToOnboardEeprom(); // only run for the first time when writing to the board.
-  //  beep(30);
+
   saveInstinctsToEeprom();
   NybbleEEPROM::assignSkillAddressToOnboardEeprom();
 
-  // TODO
-  //  beep(30);
-
-  // start message
   PTLF("\ncalibrate MPU? (Y/n)");
   bool calibrate_mpu = SerialThread::getYesOrNo();
   PTLF("Gotcha!");
@@ -186,6 +181,10 @@ void setup() {
   }
 }
 
+/**
+ * Standard arduino loop function.
+ */
+ 
 void loop() {
   char cmd[CMD_LEN] = {};
   byte newCmd = 0;
@@ -207,16 +206,16 @@ void loop() {
       //      motion.loadBySkillName("rest");
       //      transform(motion.dutyAngles);
       PTLF("shut down servos");
-      servoThread.shutServos();
+      servo_thread.shutServos();
     }
     else if (token == 's') {
       PTLF("save calibration");
-      servoThread.saveCalibs();
+      servo_thread.saveCalibs();
     }
     else if (token == 'a') {
       PTLF("abort calibration");
       for (byte i = 0; i < DOF; i++) {
-        servoThread.setCalib(i, servoCalib(i));
+        servo_thread.setCalib(i, servoCalib(i));
       }
     }
     // this block handles array like arguments
@@ -240,10 +239,10 @@ void loop() {
           //          TODO
           //          motion.loadBySkillName("calib");
           //          transform(motion.dutyAngles);
-          servoThread.shutServos();
+          servo_thread.shutServos();
         }
         if (inLen == 2)
-          servoThread.setCalib(target[0], target[1]);
+          servo_thread.setCalib(target[0], target[1]);
         PTL();
         for (byte i = 0; i < DOF; i++) {
           PT(i);
@@ -302,7 +301,7 @@ void loop() {
         //        jointIdx = firstValidJoint;
         //        transform( motion.dutyAngles, firstValidJoint, 2);
         if (!strcmp(cmd, "rest")) {
-          servoThread.shutServos();
+          servo_thread.shutServos();
           token = 'd';
         }
       }
@@ -332,7 +331,7 @@ void loop() {
       if (jointIdx == 4)
         jointIdx = 8;
       int dutyIdx = timer * WalkingDOF + jointIdx - firstValidJoint;
-      servoThread.calibratedPWM(jointIdx, Globals::motion.leg_duty_angles[dutyIdx] );
+      servo_thread.calibratedPWM(jointIdx, Globals::motion.leg_duty_angles[dutyIdx] );
       jointIdx++;
 
       if (jointIdx == DOF) {
