@@ -272,7 +272,7 @@ void loop() {
 
     if (stage == 1) {
       PTLF("\nYour MPU6050 should be placed in horizontal position, with package letters facing up.");
-      PTLF("Don't touch it until all six numbers appear. You should hear a long beep followed by a Meooow!");
+      PTLF("Don't touch it until all six numbers appear.");
       perform_mpu_calibration();
       stage++;
       delay(1000);
@@ -484,7 +484,7 @@ void loop() {
 
 void meansensors() {
   long i = 0;
-  long * agBuff = new long[6] {0, 0, 0, 0, 0, 0}; //buff_ax = 0, buff_ay = 0, buff_az = 0, buff_gx = 0, buff_gy = 0, buff_gz = 0;
+  long agBuff[] = {0, 0, 0, 0, 0, 0}; //buff_ax = 0, buff_ay = 0, buff_az = 0, buff_gx = 0, buff_gy = 0, buff_gz = 0;
 
   while (i < (buffersize + discard + 1)) {
     // read raw accel/gyro measurements from device
@@ -493,29 +493,14 @@ void meansensors() {
     if (i > discard && i <= (buffersize + discard)) { //First 100 measures are discarded
       for (byte i = 0; i < 6; i++)
         agBuff[i] += ag[i];
-      /*
-        //replacing the following codes
-        buff_ax = buff_ax + ax;
-        buff_ay = buff_ay + ay;
-        buff_az = buff_az + az;
-        buff_gx = buff_gx + gx;
-        buff_gy = buff_gy + gy;
-        buff_gz = buff_gz + gz;*/
     }
     if (i == (buffersize + discard)) {
       for (byte i = 0; i < 6; i++)
         agMean[i] = agBuff[i] / buffersize;
-      /*mean_ax = buff_ax / buffersize;
-        mean_ay = buff_ay / buffersize;
-        mean_az = buff_az / buffersize;
-        mean_gx = buff_gx / buffersize;
-        mean_gy = buff_gy / buffersize;
-        mean_gz = buff_gz / buffersize;*/
     }
     i++;
     delay(2); //Needed so we don't get repeated measures
   }
-  delete [] agBuff;
 }
 
 /**
