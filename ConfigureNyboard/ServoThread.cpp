@@ -54,7 +54,7 @@ void ServoThread::initialize() {
   delay(200);
 
   //meow();
-  Globals::lastCommand = COMMAND_REST;
+  Globals::last_command = COMMAND_REST;
   //      strcpy(lastCmd, "rest");
   Globals::motion.loadSkill(INSTINCT_POSTURE, POSTURE_REST);
   for (int8_t i = DOF - 1; i >= 0; i--) {
@@ -68,7 +68,7 @@ void ServoThread::initialize() {
   randomSeed(analogRead(0));//use the fluctuation of voltage caused by servos as entropy pool
   shutServos();
   //      token = 'd';
-  Globals::currCommand = COMMAND_REST;
+  Globals::curr_command = COMMAND_REST;
 
 }
 
@@ -204,16 +204,16 @@ float ServoThread::getRollPitchAdjustment(byte i) {
     // If we have a left joint and the deviation is to the left (negative), double the roll adjustment.
     // Similarly for right joints with positive deviation. This will help to right the cat more quickly.
     float rollAdjustmentFactor = 1;
-    if (( leftQ && Globals::RollPitchDeviation[0] > 0)
-        || (!leftQ && Globals::RollPitchDeviation[0] < 0))
+    if (( leftQ && Globals::roll_pitch_deviation[0] > 0)
+        || (!leftQ && Globals::roll_pitch_deviation[0] < 0))
       rollAdjustmentFactor = SAME_SIDE_ROLL_ADJUSTMENT_FACTOR;
-    rollAdj = NybbleEEPROM::getAdaptiveCoefficient(i, 0) * rollAdjustmentFactor * abs(Globals::RollPitchDeviation[0]);
+    rollAdj = NybbleEEPROM::getAdaptiveCoefficient(i, 0) * rollAdjustmentFactor * abs(Globals::roll_pitch_deviation[0]);
 
   }
   else
-    rollAdj = NybbleEEPROM::getAdaptiveCoefficient(i, 0) * Globals::RollPitchDeviation[0];
+    rollAdj = NybbleEEPROM::getAdaptiveCoefficient(i, 0) * Globals::roll_pitch_deviation[0];
 
   // Add the pitch adjustment into the roll adjustment
   // When we are walking, postureOrWalkingFactor will be <1, so we care less about getting the roll adjustment perfect
-  return 0.1 * ((i > 3 ? postureOrWalkingFactor : 1) * rollAdj + NybbleEEPROM::getAdaptiveCoefficient(i, 1) * Globals::RollPitchDeviation[1]);
+  return 0.1 * ((i > 3 ? postureOrWalkingFactor : 1) * rollAdj + NybbleEEPROM::getAdaptiveCoefficient(i, 1) * Globals::roll_pitch_deviation[1]);
 }

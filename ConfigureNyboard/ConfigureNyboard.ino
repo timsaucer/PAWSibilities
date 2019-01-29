@@ -52,7 +52,6 @@
 ServoThread servo_thread(0);
 SerialThread serial_thread(0);
 
-Command curr_command;
 
 // TODO Are these still needed?
 uint8_t timer = 0;
@@ -94,7 +93,7 @@ void writeConstantsToOnboardEeprom() {
 
 void saveInstinctToEeprom(char** instinct, byte num_instincts, unsigned int &onboard_eeprom_address, unsigned int &i2c_eeprom_address) {
   for (byte s = 0; s < num_instincts; s++) {
-    if (! Globals::EEPROMOverflow) {
+    if (! Globals::eeprom_overflow) {
       NybbleEEPROM::WriteIntToOnboardEEPROM(onboard_eeprom_address, i2c_eeprom_address);
 
       // Note: the following will update i2cEepromAddress with the next available address.

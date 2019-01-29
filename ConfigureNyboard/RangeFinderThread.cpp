@@ -82,5 +82,5 @@ void RangeFinderThread::initialize() {
 
 void RangeFinderThread::runLoop() {
   Serial.print("RangeFinderThread ");
-  Serial.println(Globals::currTime);
+  Serial.println(Globals::curr_time);
 }

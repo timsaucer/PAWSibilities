@@ -49,16 +49,16 @@ class Globals {
 
   public:
 
-    static unsigned long currTime;
+    static unsigned long curr_time;
 
-    static Command currCommand;
-    static Command lastCommand;
+    static Command curr_command;
+    static Command last_command;
 
     static Motion motion;
 
-    static bool EEPROMOverflow;
+    static bool eeprom_overflow;
 
-    static float RollPitchDeviation[2];
+    static float roll_pitch_deviation[2];
 
 };
 

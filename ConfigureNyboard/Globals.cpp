@@ -40,13 +40,13 @@
 
 #include "Globals.h"
 
-unsigned long Globals::currTime = millis();
+unsigned long Globals::curr_time = millis();
 
-Command Globals::currCommand = Command(COMMAND_NONE);
-Command Globals::lastCommand = Command(COMMAND_NONE);
+Command Globals::curr_command = Command(COMMAND_NONE);
+Command Globals::last_command = Command(COMMAND_NONE);
 
 Motion Globals::motion = Motion();
 
-bool Globals::EEPROMOverflow = false;
+bool Globals::eeprom_overflow = false;
 
-float Globals::RollPitchDeviation[2];
+float Globals::roll_pitch_deviation[2];

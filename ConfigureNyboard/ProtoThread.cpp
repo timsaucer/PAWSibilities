@@ -49,9 +49,9 @@ ProtoThread::ProtoThread(uint16_t interval) :
 ProtoThread::~ProtoThread() {}
 
 void ProtoThread::checkThread() {
-  if (Globals::currTime > nextUpdate_)
+  if (Globals::curr_time > nextUpdate_)
   {
     runLoop();
-    nextUpdate_ = Globals::currTime + interval_;
+    nextUpdate_ = Globals::curr_time + interval_;
   }
 }

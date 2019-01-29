@@ -50,5 +50,5 @@ void LEDThread::initialize() {
 
 void LEDThread::runLoop() {
   Serial.print("LEDThread ");
-  Serial.println(Globals::currTime);
+  Serial.println(Globals::curr_time);
 }

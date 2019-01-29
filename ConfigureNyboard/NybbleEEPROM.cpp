@@ -76,7 +76,7 @@ void NybbleEEPROM::copyDataFromPgmToI2cEeprom(unsigned int &eeAddress, unsigned 
       if (eeAddress == EEPROM_SIZE) {
         PTL();
         PTL("I2C EEPROM overflow! You must reduce the size of your instincts file!\n");
-        Globals::EEPROMOverflow = true;
+        Globals::eeprom_overflow = true;
         //#ifdef BUZZER
         //        meow(3);
         //#endif
