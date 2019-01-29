@@ -50,8 +50,17 @@ void SerialThread::initialize() {
 
 void SerialThread::runLoop() {
   if ( Serial.available() > 0) {
-//    TODO
-//    token = Serial.read();
-//    newCmdIdx = 3;
+    //    TODO
+    //    token = Serial.read();
+    //    newCmdIdx = 3;
   }
+}
+
+bool SerialThread::getYesOrNo() {
+  char curr_val = 'a';
+  while (curr_val != 'y' && curr_val != 'Y' && curr_val != 'n' && curr_val != 'N') {
+    while (!Serial.available());
+    curr_val = Serial.read();
+  }
+  return curr_val == 'y' || curr_val == 'Y';
 }

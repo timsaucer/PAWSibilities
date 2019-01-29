@@ -54,10 +54,9 @@ void writeConstantsToOnboardEeprom() {
   for (byte i = 0; i < sizeof(melody); i++)
     EEPROM.update(MELODY - 1 - i, melody[i]);
   PTLF("Reset all joint calibration? (Y/n)");
-  while (!Serial.available());
-  char resetJointCalibrationQ = Serial.read();
+  bool reset_calibration = SerialThread::getYesOrNo();
   for (byte i = 0; i < DOF; i++) {
-    if (resetJointCalibrationQ == 'Y')
+    if (reset_calibration)
       EEPROM.update(CALIB + i, 0);
     EEPROM.update(PIN + i, pins[i]);
     EEPROM.update(MID_SHIFT + i, middleShifts[i]);
@@ -66,10 +65,7 @@ void writeConstantsToOnboardEeprom() {
     for (byte para = 0; para < NUM_ADAPT_PARAM; para++) {
       EEPROM.update(ADAPT_PARAM + i * NUM_ADAPT_PARAM + para, round(adaptiveParameterArray[i][para]));
     }
-    /*PT(servoCalib(i));
-      PT(',');*/
   }
-  //PTL();
 }
 
 /**
@@ -98,13 +94,13 @@ void saveInstinctToEeprom(char** instinct, byte num_instincts, unsigned int &onb
 void saveInstinctsToEeprom() {
   unsigned int onboard_eeprom_address = SKILLS;
   unsigned int i2c_eeprom_address = 0;
-  // TODO : Clean up parsing input from serial
+
   PTLF("\n* Do you need to update Instincts? (Y/n)");
-  while (!Serial.available());
-  char choice = Serial.read();
-  PT(choice == 'Y' ? "Will" : "Won't");
-  PTL(" overwrite Instincts on external I2C EEPROM!");
-  if (choice == 'Y') {
+  bool update_instincts = SerialThread::getYesOrNo();
+
+  PT(update_instincts ? "Will" : "Won't");
+  PTLF(" overwrite Instincts on external I2C EEPROM!");
+  if (update_instincts) {
     PTLF("Saving skill info...");
     saveInstinctToEeprom(postures, NUM_POSTURES, onboard_eeprom_address, i2c_eeprom_address);
     saveInstinctToEeprom(leg_instincts, NUM_INSTINCTS_LEGS, onboard_eeprom_address, i2c_eeprom_address);
@@ -115,16 +111,16 @@ void saveInstinctsToEeprom() {
     PTLF("    Maximal storage of onboard EEPROM is 1024 bytes.");
     PTF("\tInstinctive dictionary used ");
     PT(onboard_eeprom_address);
-    PT(" bytes (");
+    PTF(" bytes (");
     PT(float(100) * (onboard_eeprom_address) / 1024);
     PTLF(" %)!");
 
     PTF("    Maximal storage of external I2C EEPROM is ");
     PT(EEPROM_SIZE);
     PTLF(" bytes.");
-    PT("\tInstinctive data used ");
+    PTF("\tInstinctive data used ");
     PT(i2c_eeprom_address);
-    PT(" bytes (");
+    PTF(" bytes (");
     PT(float(100)*i2c_eeprom_address / EEPROM_SIZE);
     PTLF(" %)!");
   }
@@ -192,7 +188,6 @@ MPU6050 mpu(0x68); // <-- use for AD0 high
 
 
 byte stage = 0;
-char choice;
 int ag[6];      //int16_t ax, ay, az, gx, gy, gz;
 int agMean[6];  //mean_ax, mean_ay, mean_az, mean_gx, mean_gy, mean_gz;
 int agOffset[6];  //ax_offset, ay_offset, az_offset, gx_offset, gy_offset, gz_offset;
@@ -209,7 +204,7 @@ char lastCmd[CMD_LEN] = {};
 byte jointIdx = 0;
 
 bool printMPU = false;
-
+bool calibrate_mpu = false;
 
 void setup() {
 
@@ -247,10 +242,9 @@ void setup() {
 
   // start message
   PTLF("\ncalibrate MPU? (Y/n)");
-  while (!Serial.available());
-  choice = Serial.read();
+  calibrate_mpu = SerialThread::getYesOrNo();
   PTLF("Gotcha!");
-  if (choice == 'Y') {
+  if (calibrate_mpu) {
     PTLF("\n* MPU6050 Calibration Routine");
     delay(2000);
     // verify connection
@@ -268,7 +262,7 @@ void setup() {
 
 void loop() {
 
-  if (choice == 'Y') {
+  if (calibrate_mpu) {
     if (stage == 0) {
       PTLF("\nReading sensors for first time...");
       meansensors();
@@ -279,7 +273,7 @@ void loop() {
     if (stage == 1) {
       PTLF("\nYour MPU6050 should be placed in horizontal position, with package letters facing up.");
       PTLF("Don't touch it until all six numbers appear. You should hear a long beep followed by a Meooow!");
-      calibration();
+      perform_mpu_calibration();
       stage++;
       delay(1000);
     }
@@ -375,11 +369,9 @@ void loop() {
         PTL();
         for (byte i = 0; i < DOF; i++) {
           PT(i);
-          PT(",\t");
+          PTF(",\t");
         }
         PTL();
-        // TODO
-        //        printList(servoCalibs);
         yield();
 
       }
@@ -526,37 +518,25 @@ void meansensors() {
   delete [] agBuff;
 }
 
-void calibration() {
+/**
+ * Performs the calibration. This is a blocking loop that keeps going until all 6 
+ * axes are within their tolerances.
+ */
+void perform_mpu_calibration() {
   for (int i = 0; i < 6; i++) {
     agOffset[i] = ((i == 2 ? 16384 : 0) - agMean[i]) / 8; //agOffset[2] is az_offset
-
-    /*
-       //replacing the following codes
-       ax_offset = -mean_ax / 8;
-      ay_offset = -mean_ay / 8;
-      az_offset = (16384 - mean_az) / 8;
-
-      gx_offset = -mean_gx / 4;
-      gy_offset = -mean_gy / 4;
-      gz_offset = -mean_gz / 4;*/
   }
-  while (1) {
-    int ready = 0;
+
+  int axes_ready = 0;
+  while (axes_ready != 6) {
+    axes_ready = 0;
     mpu.setXAccelOffset(agOffset[0]);
     mpu.setYAccelOffset(agOffset[1]);
     mpu.setZAccelOffset(agOffset[2]);
     mpu.setXGyroOffset(agOffset[3]);
     mpu.setYGyroOffset(agOffset[4]);
     mpu.setZGyroOffset(agOffset[5]);
-    /*
-       //replacing the following codes
-      mpu.setXAccelOffset(ax_offset);
-      mpu.setYAccelOffset(ay_offset);
-      mpu.setZAccelOffset(az_offset);
-      mpu.setXGyroOffset(gx_offset);
-      mpu.setYGyroOffset(gy_offset);
-      mpu.setZGyroOffset(gz_offset);*/
-
+    
     meansensors();
 
     for (int i = 0; i < 6; i++) {
@@ -564,81 +544,14 @@ void calibration() {
       if (abs((i == 2 ? 16384 : 0) - agMean[i]) <= tolerance) {
         PT(i + 1);
         //        beep(i * 2 + (i == 3 ? 0 : 1), 100, 10); // note F to G takes half tone
-        ready++;
+        axes_ready++;
       }
       else {
-        PT('.');
+        PTF(".");
         agOffset[i] -= (agMean[i] - (i == 2 ? 16384 : 0)) / (tolerance == 1 ? 3 : tolerance);
       }
     }
     PTL();
-    /*  //replacing the following codes
 
-          if (abs(mean_ax) <= acel_deadzone) {
-            PT (1);
-            beep(1, 100, 10);
-            ready++;
-          }
-          else {
-            PT('.');
-            ax_offset = ax_offset - mean_ax / acel_deadzone;
-          }
-
-          if (abs(mean_ay) <= acel_deadzone)  {
-            PT (2);
-            beep(3, 100, 10);
-            ready++;
-          }
-          else {
-            PT('.');
-            ay_offset = ay_offset - mean_ay / acel_deadzone;
-          }
-
-          if (abs(16384 - mean_az) <= acel_deadzone)  {
-            PT (3);
-            beep(5, 100, 10);
-            ready++;
-          }
-          else {
-            PT('.');
-            az_offset = az_offset + (16384 - mean_az) / acel_deadzone;
-          }
-
-          if (abs(mean_gx) <= giro_deadzone) {
-            PT (4);
-            beep(6, 100, 10);
-            ready++;
-          }
-          else {
-            PT('.');
-            gx_offset = gx_offset - mean_gx / (giro_deadzone + 2);
-          }
-
-          if (abs(mean_gy) <= giro_deadzone) {
-            PT (5);
-            beep(8, 100, 10);
-            ready++;
-          }
-          else {
-            PT('.');
-            gy_offset = gy_offset - mean_gy / (giro_deadzone + 2);
-          }
-
-          if (abs(mean_gz) <= giro_deadzone)  {
-            PT (6);
-            beep(10, 100, 10);
-            ready++;
-          }
-          else {
-            PT('.');
-            gz_offset = gz_offset - mean_gz / (giro_deadzone + 2);
-          }
-    */
-
-    if (ready == 6) {
-      delay(500);
-      //      beep(100, 1000); // Is the beeping really necessary?
-      break;
-    }
   }
 }

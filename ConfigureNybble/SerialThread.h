@@ -54,6 +54,12 @@ class SerialThread : public ProtoThread {
 
     void initialize();
 
+    /**
+     * Continually waits for the user to enter one of Y y N n.
+     * @return true if Y or y
+     */
+    static bool getYesOrNo();
+
   private:
     void runLoop();
 
