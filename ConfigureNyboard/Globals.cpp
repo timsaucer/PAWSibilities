@@ -50,3 +50,5 @@ Motion Globals::motion = Motion();
 bool Globals::eeprom_overflow = false;
 
 float Globals::roll_pitch_deviation[2];
+
+static int16_t Globals::command_vals[MAX_COMMAND_VALUES];

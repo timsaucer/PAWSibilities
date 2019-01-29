@@ -63,6 +63,8 @@ class SerialThread : public ProtoThread {
   private:
     void runLoop();
 
+    void updateCommandVals();
+
 };
 
 #endif // _SERIAL_THREAD_H_

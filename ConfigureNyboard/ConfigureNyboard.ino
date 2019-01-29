@@ -56,7 +56,6 @@ SerialThread serial_thread(0);
 // TODO Are these still needed?
 uint8_t timer = 0;
 byte firstValidJoint;
-char token;
 
 char lastCmd[CMD_LEN] = {};
 byte jointIdx = 0;
@@ -64,8 +63,8 @@ byte jointIdx = 0;
 bool printMPU = false;
 
 /**
- * Store constants on the onboard EEPROM.
- */
+   Store constants on the onboard EEPROM.
+*/
 
 void writeConstantsToOnboardEeprom() {
   EEPROM.update(MELODY, sizeof(melody));
@@ -147,9 +146,9 @@ void saveInstinctsToEeprom() {
 }
 
 /**
- * Standard arduino setup function.
- */
- 
+   Standard arduino setup function.
+*/
+
 void setup() {
 
   PTLF("\nWelcome to the Nyboard configuration for PAWSibilities!");
@@ -181,135 +180,46 @@ void setup() {
 }
 
 /**
- * Standard arduino loop function.
- */
- 
+   Standard arduino loop function.
+*/
+
 void loop() {
-  char cmd[CMD_LEN] = {};
-  byte newCmd = 0;
-  if (Serial.available() > 0) {
-    token = Serial.read();
-    newCmd = 3;
+  serial_thread.checkThread();
+  if (Globals::curr_command != COMMAND_NONE) {
+
+    //    if (strcmp(cmd, "") && strcmp(lastCmd, cmd) ) {
+    //      PT("compare lastCmd ");
+    //      PT(lastCmd);
+    //      PT(" with newCmd ");
+    //      PT(token);
+    //      PT(cmd);
+    //      PT("\n");
+    //      if (token == 'w') {}; //some words for undefined behaviors
+
+    //      if (token == 'k') { //validating key
+    // TODO
+    //        motion.loadBySkillName(cmd);
+    //motion.info();
+    timer = 0;
+    //        if (strcmp(cmd, "balance") && strcmp(cmd, "lifted") && strcmp(cmd, "dropped") )
+    //          strcpy(lastCmd, cmd);
+    // if posture, start jointIdx from 0
+    // if gait, walking DOF = 8, start jointIdx from 8
+    //          walking DOF = 12, start jointIdx from 4
+    // TODO
+    //        firstValidJoint = (motion.period == 1) ? 0 : DOF - WalkingDOF;
+    //        jointIdx = firstValidJoint;
+    //        transform( motion.dutyAngles, firstValidJoint, 2);
+    //        if (!strcmp(cmd, "rest")) {
+    //          servo_thread.shutServos();
+    //          token = 'd';
+    //        }
   }
-  if (newCmd) {
-    //    beep(newCmd * 10);
-    // this block handles argumentless tokens
+  //      else {
+  //        lastCmd[0] = token;
+  //        memset(lastCmd + 1, '\0', CMD_LEN - 1);
+  //      }
 
-    if (token == 'g')
-      printMPU = !printMPU;
-    // if (token == 'h')
-    //   PTLF("** Help Information **");// print the help document
-
-    else if (token == 'd' ) {
-      //      TODO
-      //      motion.loadBySkillName("rest");
-      //      transform(motion.dutyAngles);
-      PTLF("shut down servos");
-      servo_thread.shutServos();
-    }
-    else if (token == 's') {
-      PTLF("save calibration");
-      servo_thread.saveCalibs();
-    }
-    else if (token == 'a') {
-      PTLF("abort calibration");
-      for (byte i = 0; i < DOF; i++) {
-        servo_thread.setCalib(i, servoCalib(i));
-      }
-    }
-    // this block handles array like arguments
-    else if (token == 'c' || token == 'm') {
-      int target[2] = {};
-      String inBuffer = Serial.readStringUntil('\n');
-      byte inLen = 0;
-      strcpy(cmd, inBuffer.c_str());
-      char *pch;
-      pch = strtok (cmd, " ,");
-      for (int c = 0; pch != NULL; c++)
-      {
-        target[c] = atoi(pch);
-        pch = strtok (NULL, " ,");
-        inLen++;
-      }
-
-      if (token == 'c') {
-        //PTLF("calibrating [ targetIdx, angle ]: ");
-        if (strcmp(lastCmd, "c")) { //first time entering the calibration function
-          //          TODO
-          //          motion.loadBySkillName("calib");
-          //          transform(motion.dutyAngles);
-          servo_thread.shutServos();
-        }
-        if (inLen == 2)
-          servo_thread.setCalib(target[0], target[1]);
-        PTL();
-        for (byte i = 0; i < DOF; i++) {
-          PT(i);
-          PTF(",\t");
-        }
-        PTL();
-        yield();
-
-      }
-      else if (token == 'm') {
-        //PTLF("moving [ targetIdx, angle ]: ");
-        //        TODO
-        //        motion.dutyAngles[target[0]] = target[1];
-      }
-      PT(token);
-      // TODO
-      //      printList(target, 2);
-
-      // TODO
-      //      int duty = SERVOMIN + PWM_RANGE / 2 + float(middleShift(target[0])  + servoCalibs[target[0]] + motion.dutyAngles[target[0]]) * pulsePerDegree[target[0]] * rotationDirection(target[0]) ;
-      // TODO
-      //      pwm.setPWM(pin(target[0]), 0,  duty);
-
-    }
-
-    else if (Serial.available() > 0) {
-      String inBuffer = Serial.readStringUntil('\n');
-      strcpy(cmd, inBuffer.c_str());
-    }
-    while (Serial.available() && Serial.read()); //flush the remaining serial buffer in case the commands are parsed incorrectly
-
-    if (strcmp(cmd, "") && strcmp(lastCmd, cmd) ) {
-      //      PT("compare lastCmd ");
-      //      PT(lastCmd);
-      //      PT(" with newCmd ");
-      //      PT(token);
-      //      PT(cmd);
-      //      PT("\n");
-      if (token == 'w') {}; //some words for undefined behaviors
-
-      if (token == 'k') { //validating key
-        // TODO
-        //        motion.loadBySkillName(cmd);
-        //motion.info();
-        // TODO: This is a check for debug only
-        //        PTF("free memory: ");
-        //        PTL(freeMemory());
-        timer = 0;
-        if (strcmp(cmd, "balance") && strcmp(cmd, "lifted") && strcmp(cmd, "dropped") )
-          strcpy(lastCmd, cmd);
-        // if posture, start jointIdx from 0
-        // if gait, walking DOF = 8, start jointIdx from 8
-        //          walking DOF = 12, start jointIdx from 4
-        // TODO
-        //        firstValidJoint = (motion.period == 1) ? 0 : DOF - WalkingDOF;
-        //        jointIdx = firstValidJoint;
-        //        transform( motion.dutyAngles, firstValidJoint, 2);
-        if (!strcmp(cmd, "rest")) {
-          servo_thread.shutServos();
-          token = 'd';
-        }
-      }
-      else {
-        lastCmd[0] = token;
-        memset(lastCmd + 1, '\0', CMD_LEN - 1);
-      }
-    }
-  }
 
   //motion block
   {
@@ -320,23 +230,21 @@ void loop() {
       //      printList(ag, 6);
     }
 
-    if (token == 'k') {
-      // if (lastCmd[0] == 'm' && lastCmd[1] == 'r')
-      if (Globals::motion.leg_period != 1) {//skip non-walking DOF
-        if (jointIdx < 4)
-          jointIdx = 4;
+    // if (lastCmd[0] == 'm' && lastCmd[1] == 'r')
+    if (Globals::motion.leg_period != 1) {//skip non-walking DOF
+      if (jointIdx < 4)
+        jointIdx = 4;
 
-      }
-      if (jointIdx == 4)
-        jointIdx = 8;
-      int dutyIdx = timer * WalkingDOF + jointIdx - firstValidJoint;
-      servo_thread.calibratedPWM(jointIdx, Globals::motion.leg_duty_angles[dutyIdx] );
-      jointIdx++;
+    }
+    if (jointIdx == 4)
+      jointIdx = 8;
+    int dutyIdx = timer * WalkingDOF + jointIdx - firstValidJoint;
+    servo_thread.calibratedPWM(jointIdx, Globals::motion.leg_duty_angles[dutyIdx] );
+    jointIdx++;
 
-      if (jointIdx == DOF) {
-        jointIdx = 0;
-        timer = (timer + 1) % Globals::motion.leg_period;
-      }
+    if (jointIdx == DOF) {
+      jointIdx = 0;
+      timer = (timer + 1) % Globals::motion.leg_period;
     }
   }
 }

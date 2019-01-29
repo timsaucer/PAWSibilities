@@ -49,16 +49,78 @@ void SerialThread::initialize() {
   Serial.begin(57600);
   Serial.setTimeout(5);
   delay(1);
-  
+
   while (!Serial)
     delay(1); // waits until Serial is ready
 }
 
+void SerialThread::updateCommandVals() {
+  String inBuffer = Serial.readStringUntil('\n');
+  char* command_string;
+  strcpy(command_string, inBuffer.c_str());
+
+  char *ptr_substring = strtok (command_string, " ,");
+  for (int c = 0; ptr_substring != NULL && c < MAX_COMMAND_VALUES; c++)
+  {
+    Globals::command_vals[c] = atoi(ptr_substring);
+    ptr_substring = strtok (NULL, " ,");
+  }
+}
+
 void SerialThread::runLoop() {
   if ( Serial.available() > 0) {
-    //    TODO
-    //    token = Serial.read();
-    //    newCmdIdx = 3;
+
+    // TODO: Each of the comments below needs to be set up in its appropriate function
+    switch (Serial.read()) {
+      case 'g':
+        //      printMPU = !printMPU;
+        break;
+      case 'h':
+        PTLF("** Help Information **");// print the help document
+        break;
+      case 'd':
+        Globals::motion.loadSkill(INSTINCT_POSTURE, POSTURE_REST);
+        Globals::curr_command = COMMAND_MOVE_TO_POSITION;
+        //      transform(motion.dutyAngles);
+        //      PTLF("shut down servos");
+        //      servo_thread.shutServos();
+        break;
+      case 's':
+        PTLF("save calibration");
+        Globals::curr_command = COMMAND_SAVE_SERVO_CALIBRATION;
+        //      servo_thread.saveCalibs();
+        break;
+      case 'a':
+        PTLF("abort calibration");
+        Globals::curr_command = COMMAND_ABORT_SERVO_CALIBRATION;
+        //      for (byte i = 0; i < DOF; i++) {
+        //        servo_thread.setCalib(i, servoCalib(i));
+        //      }
+        break;
+      case 'c':
+        // In Calibration we will see if this is -1. If so, just move all joints to their calibration position
+        Globals::command_vals[0] = -1;
+
+        Globals::curr_command = COMMAND_CALIBRATE_SERVO;
+        updateCommandVals();
+        //          motion.loadBySkillName("calib");
+        //          transform(motion.dutyAngles);
+        //          servo_thread.shutServos();
+        //        if (inLen == 2)
+        //          servo_thread.setCalib(target[0], target[1])
+        //        yield();
+        break;
+      case 'm':
+        Globals::curr_command = COMMAND_MOVE_JOINT;
+        updateCommandVals();
+        //        motion.dutyAngles[target[0]] = target[1];
+        //      printList(target, 2);
+        //      int duty = SERVOMIN + PWM_RANGE / 2 + float(middleShift(target[0])  + servoCalibs[target[0]] + motion.dutyAngles[target[0]]) * pulsePerDegree[target[0]] * rotationDirection(target[0]) ;
+        //      pwm.setPWM(pin(target[0]), 0,  duty);
+        break;
+      default:
+        break;
+    }
   }
 }
 

@@ -48,6 +48,7 @@ class Skills {
   public:
 
     static const char* newbilities[];
+    
 };
 
 #endif // _SKILLS_H_

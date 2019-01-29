@@ -54,6 +54,8 @@ class Globals {
     static Command curr_command;
     static Command last_command;
 
+    static int16_t command_vals[MAX_COMMAND_VALUES];
+
     static Motion motion;
 
     static bool eeprom_overflow;

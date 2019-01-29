@@ -158,6 +158,7 @@
 #define LARGE_PITCH 75
 
 #define CMD_LEN 10
+#define MAX_COMMAND_VALUES 2
 
 #define JOINT_HEAD_PAN 0
 #define JOINT_HEAD_TILT 1
