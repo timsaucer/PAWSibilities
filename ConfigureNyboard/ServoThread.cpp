@@ -40,7 +40,7 @@
 
 #include "ServoThread.h"
 
-ServoThread::ServoThread(uint16_t interval) : 
+ServoThread::ServoThread(uint16_t interval) :
   ProtoThread(interval),
   is_shutdown(false)
 {
@@ -75,6 +75,10 @@ void ServoThread::initialize() {
 
 }
 
+void ServoThread::enableServos() {
+  is_shutdown = false;
+}
+
 void ServoThread::shutdownServos() {
   delay(100);
   for (int8_t i = DOF - 1; i >= 0; i--) {
@@ -84,13 +88,20 @@ void ServoThread::shutdownServos() {
 }
 
 void ServoThread::setCalib(uint8_t index, int8_t val) {
-  servoCalibs[index] = val;
+  if (index >= 0 && index < DOF)
+    servoCalibs[index] = val;
 }
 
-void ServoThread::saveCalibs() {
+void ServoThread::saveCalibsToOnboardEeprom() {
   for (byte i = 0; i < DOF; i++) {
     EEPROM.update(CALIB + i, servoCalibs[i]);
     calibratedDuty0[i] = SERVOMIN + PWM_RANGE / 2 + float(middleShift(i) + servoCalibs[i]) * pulsePerDegree[i] * rotationDirection(i);
+  }
+}
+
+void ServoThread::resetCalibsFromOnboardEeprom() {
+  for (byte i = 0; i < DOF; i++) {
+    servoCalibs[i] = servoCalib(i);
   }
 }
 
@@ -122,7 +133,7 @@ void ServoThread::runLoop() {
   idx_duty = Globals::motion.tail_timer * Globals::motion.tail_period;
   calibratedPWM(JOINT_TAIL_PAN, Globals::motion.head_duty_angles[idx_duty] + getRollPitchAdjustment(JOINT_TAIL_PAN));
 
-  for (int idx_joint=0; idx_joint<8; idx_joint++) {
+  for (int idx_joint = 0; idx_joint < 8; idx_joint++) {
     idx_duty = Globals::motion.leg_timer * Globals::motion.leg_period + idx_joint;
     calibratedPWM(JOINT_FRONT_LEFT_PITCH + idx_joint, Globals::motion.leg_duty_angles[idx_duty] + getRollPitchAdjustment(JOINT_FRONT_LEFT_PITCH + idx_joint));
   }

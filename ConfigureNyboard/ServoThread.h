@@ -55,10 +55,14 @@ class ServoThread : public ProtoThread {
     void initialize();
 
     void shutdownServos();
+    
+    void enableServos();
 
     void setCalib(uint8_t index, int8_t val);
 
-    void saveCalibs();
+    void saveCalibsToOnboardEeprom();
+
+    void resetCalibsFromOnboardEeprom();
 
     void calibratedPWM(byte i, float angle);
 

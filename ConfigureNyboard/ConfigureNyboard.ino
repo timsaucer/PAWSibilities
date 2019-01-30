@@ -182,27 +182,37 @@ void loop() {
     case COMMAND_HELP:
       break;
     case COMMAND_REST:
+      Globals::motion.loadSkill(INSTINCT_POSTURE, POSTURE_REST);
+      servo_thread.checkThread();
+      servo_thread.shutdownServos();
       break;
     case COMMAND_CALIBRATE_SERVO:
+      Globals::motion.loadSkill(INSTINCT_POSTURE, POSTURE_CALIB);
+      servo_thread.checkThread();
+      servo_thread.shutdownServos();
+      servo_thread.setCalib(Globals::command_vals[0], Globals::command_vals[1]);
       break;
     case COMMAND_SAVE_SERVO_CALIBRATION:
+      servo_thread.saveCalibsToOnboardEeprom();
       break;
     case COMMAND_ABORT_SERVO_CALIBRATION:
+      servo_thread.resetCalibsFromOnboardEeprom();
       break;
     case COMMAND_MOVE_CONTINUOUSLY:
       Globals::motion.loadSkill(Globals::command_vals[0], Globals::command_vals[1]);
       break;
     case COMMAND_MOVE_TO_POSITION:
-      //      transform(motion.dutyAngles);
-      //      PTLF("shut down servos");
-      //      servo_thread.shutServos();
+      Globals::motion.loadSkill(INSTINCT_POSTURE, Globals::command_vals[0]);
+      servo_thread.checkThread();
+      servo_thread.shutdownServos();
       break;
     case COMMAND_MOVE_JOINT:
+      Globals::motion.setSingleJoint(Globals::command_vals[0], Globals::command_vals[1]);
+      servo_thread.checkThread();
+      servo_thread.shutdownServos();
       break;
     case COMMAND_NONE:
-      break;
     case COMMAND_UNDEFINED:
-      break;
     default:
       break;
   }
@@ -223,7 +233,7 @@ void loop() {
   // TODO
   //        motion.loadBySkillName(cmd);
   //motion.info();
-  
+
   //        if (strcmp(cmd, "balance") && strcmp(cmd, "lifted") && strcmp(cmd, "dropped") )
   //          strcpy(lastCmd, cmd);
   // if posture, start jointIdx from 0
