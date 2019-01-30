@@ -261,22 +261,5 @@ void loop() {
       // TODO
       //      printList(ag, 6);
     }
-
-    // if (lastCmd[0] == 'm' && lastCmd[1] == 'r')
-    if (Globals::motion.leg_period != 1) {//skip non-walking DOF
-      if (jointIdx < 4)
-        jointIdx = 4;
-
-    }
-    if (jointIdx == 4)
-      jointIdx = 8;
-    int dutyIdx = timer * WalkingDOF + jointIdx - firstValidJoint;
-    servo_thread.calibratedPWM(jointIdx, Globals::motion.leg_duty_angles[dutyIdx] );
-    jointIdx++;
-
-    if (jointIdx == DOF) {
-      jointIdx = 0;
-      timer = (timer + 1) % Globals::motion.leg_period;
-    }
   }
 }
