@@ -38,28 +38,33 @@
 
 */
 
-#ifndef _GLOBALS_H_
-#define _GLOBALS_H_
+#ifndef _SERIAL_THREAD_H_
+#define _SERIAL_THREAD_H_
 
-#include <Adafruit_PWMServoDriver.h>
-#include "Enums.h"
-#include "Motion.h"
+#include "ProtoThread.h"
+#include "Configuration.h"
 
-class Globals {
-
+/**
+   \class SerialThread
+   \brief Control the IR receiver
+*/
+class SerialThread : public ProtoThread {
   public:
+    SerialThread(uint16_t interval);
 
-    static unsigned long currTime;
+    void initialize();
 
-    static Command currCommand;
-    static Command lastCommand;
+    /**
+     * Continually waits for the user to enter one of Y y N n.
+     * @return true if Y or y
+     */
+    static bool getYesOrNo();
 
-    static Motion motion;
+  private:
+    void runLoop();
 
-    static bool EEPROMOverflow;
-
-    static float RollPitchDeviation[2];
+    void updateCommandVals();
 
 };
 
-#endif // _GLOBALS_H_
+#endif // _SERIAL_THREAD_H_

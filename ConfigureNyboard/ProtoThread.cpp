@@ -38,20 +38,20 @@
 
 */
 
-#include "SerialThread.h"
+#include "ProtoThread.h"
 
-SerialThread::SerialThread(uint16_t interval) : ProtoThread(interval)
+ProtoThread::ProtoThread(uint16_t interval) :
+  interval_(interval),
+  nextUpdate_(0)
 {
-
 }
 
-void SerialThread::initialize() {
-}
+ProtoThread::~ProtoThread() {}
 
-void SerialThread::runLoop() {
-  if ( Serial.available() > 0) {
-//    TODO
-//    token = Serial.read();
-//    newCmdIdx = 3;
+void ProtoThread::checkThread() {
+  if (Globals::curr_time > nextUpdate_)
+  {
+    runLoop();
+    nextUpdate_ = Globals::curr_time + interval_;
   }
 }

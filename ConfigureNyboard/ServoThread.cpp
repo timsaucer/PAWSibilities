@@ -40,7 +40,10 @@
 
 #include "ServoThread.h"
 
-ServoThread::ServoThread(uint16_t interval) : ProtoThread(interval) {
+ServoThread::ServoThread(uint16_t interval) :
+  ProtoThread(interval),
+  is_shutdown(false)
+{
 }
 
 void ServoThread::initialize() {
@@ -54,7 +57,7 @@ void ServoThread::initialize() {
   delay(200);
 
   //meow();
-  Globals::lastCommand = COMMAND_REST;
+  Globals::last_command = COMMAND_REST;
   //      strcpy(lastCmd, "rest");
   Globals::motion.loadSkill(INSTINCT_POSTURE, POSTURE_REST);
   for (int8_t i = DOF - 1; i >= 0; i--) {
@@ -66,27 +69,39 @@ void ServoThread::initialize() {
     delay(100);
   }
   randomSeed(analogRead(0));//use the fluctuation of voltage caused by servos as entropy pool
-  shutServos();
+  shutdownServos();
   //      token = 'd';
-  Globals::currCommand = COMMAND_REST;
+  Globals::curr_command = COMMAND_REST;
 
 }
 
-void ServoThread::shutServos() {
+void ServoThread::enableServos() {
+  is_shutdown = false;
+}
+
+void ServoThread::shutdownServos() {
   delay(100);
   for (int8_t i = DOF - 1; i >= 0; i--) {
     pwm.setPWM(i, 0, 4096);
   }
+  is_shutdown = true;
 }
 
 void ServoThread::setCalib(uint8_t index, int8_t val) {
-  servoCalibs[index] = val;
+  if (index >= 0 && index < DOF)
+    servoCalibs[index] = val;
 }
 
-void ServoThread::saveCalibs() {
+void ServoThread::saveCalibsToOnboardEeprom() {
   for (byte i = 0; i < DOF; i++) {
     EEPROM.update(CALIB + i, servoCalibs[i]);
     calibratedDuty0[i] = SERVOMIN + PWM_RANGE / 2 + float(middleShift(i) + servoCalibs[i]) * pulsePerDegree[i] * rotationDirection(i);
+  }
+}
+
+void ServoThread::resetCalibsFromOnboardEeprom() {
+  for (byte i = 0; i < DOF; i++) {
+    servoCalibs[i] = servoCalib(i);
   }
 }
 
@@ -97,6 +112,7 @@ void ServoThread::moveToCalibratedPositions() {
 }
 
 void ServoThread::calibratedPWM(byte i, float angle) {
+  is_shutdown = false;
   /*float angle = max(-SERVO_ANG_RANGE/2, min(SERVO_ANG_RANGE/2, angle));
     if (i > 3 && i < 8)
     angle = max(-5, angle);*/
@@ -107,47 +123,25 @@ void ServoThread::calibratedPWM(byte i, float angle) {
 }
 
 void ServoThread::runLoop() {
+  if (is_shutdown)
+    return;
 
-  byte firstWalkingJoint = (Globals::motion.leg_period == 1) ? 0 : DOF - WalkingDOF;
-  postureOrWalkingFactor = (Globals::motion.leg_period == 1 ? 1 : WALKING_ROLL_ADJUSTMENT_FACTOR);
-  byte jointIdx = firstWalkingJoint;
+  uint8_t idx_duty = Globals::motion.head_timer * Globals::motion.head_period;
+  calibratedPWM(JOINT_HEAD_PAN, Globals::motion.head_duty_angles[idx_duty] + getRollPitchAdjustment(JOINT_HEAD_PAN));
+  calibratedPWM(JOINT_HEAD_TILT, Globals::motion.head_duty_angles[idx_duty + 1] + getRollPitchAdjustment(JOINT_HEAD_TILT));
 
-  // There are two options for motion:
-  //   (1) We've been given a posture. It has all 16 DOF specified.
-  //   (2) We've been given a motion for the body, the head, and the tail (each is independent of the others)
-  // For now, the cat tries to move as fast as possible through all of the positions
-  // We can slow it down by setting the update rate on this thread.
+  idx_duty = Globals::motion.tail_timer * Globals::motion.tail_period;
+  calibratedPWM(JOINT_TAIL_PAN, Globals::motion.head_duty_angles[idx_duty] + getRollPitchAdjustment(JOINT_TAIL_PAN));
 
-  if (Globals::motion.is_posture) {
-    // Hold a static posture
-  } else {
-    // We should have 3 independent movements: legs, head, and tail
-    // Only the legs should affect the orientation of the torso where the IMU resides.
+  for (int idx_joint = 0; idx_joint < 8; idx_joint++) {
+    idx_duty = Globals::motion.leg_timer * Globals::motion.leg_period + idx_joint;
+    calibratedPWM(JOINT_FRONT_LEFT_PITCH + idx_joint, Globals::motion.leg_duty_angles[idx_duty] + getRollPitchAdjustment(JOINT_FRONT_LEFT_PITCH + idx_joint));
   }
 
+  Globals::motion.head_timer = (Globals::motion.head_timer + 1) % Globals::motion.head_period;
+  Globals::motion.tail_timer = (Globals::motion.tail_timer + 1) % Globals::motion.tail_period;
+  Globals::motion.leg_timer = (Globals::motion.leg_timer + 1) % Globals::motion.leg_period;
 
-
-  
-
-  // ADD NOTE ABOUT HOW WE'RE ASSUMING THE NYBBLE DESIGN. PREVIOUS CODE WORKED WITH OTHER OPEN CAT PROJECTS
-
-  // PReviously the loop() would update a single servo at a time. jointIdx causes it to step to the next one.
-
-
-  if (jointIdx < firstWalkingJoint && Globals::motion.leg_period > 1) {
-    calibratedPWM(jointIdx, getRollPitchAdjustment(jointIdx));
-  }
-  else if (jointIdx >= firstWalkingJoint) {
-    int dutyIdx = timer * WalkingDOF + jointIdx - firstWalkingJoint;
-    calibratedPWM(jointIdx, Globals::motion.leg_duty_angles[dutyIdx] + getRollPitchAdjustment(jointIdx));
-  }
-  jointIdx++;
-
-  if (jointIdx == DOF) {
-    jointIdx = 0;
-    //PTL((float)analogRead(BATT) *  5.0 / 1024.0*3);
-    timer = (timer + 1) % Globals::motion.leg_period;
-  }
 }
 
 void ServoThread::transform( char * target,  float speedRatio = 1, byte offset = 0) {
@@ -170,8 +164,8 @@ void ServoThread::transform( char * target,  float speedRatio = 1, byte offset =
 void ServoThread::behavior(int n, char** skill, float *speedRatio, int *pause) {
   for (byte i = 0; i < n; i++) {
     // TODO
-//    Globals::motion.loadBySkillName(skill[i]);
-//    transform(Globals::motion.leg_duty_angles, speedRatio[i]);
+    //    Globals::motion.loadBySkillName(skill[i]);
+    //    transform(Globals::motion.leg_duty_angles, speedRatio[i]);
     delay(pause[i]);
   }
 
@@ -204,16 +198,16 @@ float ServoThread::getRollPitchAdjustment(byte i) {
     // If we have a left joint and the deviation is to the left (negative), double the roll adjustment.
     // Similarly for right joints with positive deviation. This will help to right the cat more quickly.
     float rollAdjustmentFactor = 1;
-    if (( leftQ && Globals::RollPitchDeviation[0] > 0)
-        || (!leftQ && Globals::RollPitchDeviation[0] < 0))
+    if (( leftQ && Globals::roll_pitch_deviation[0] > 0)
+        || (!leftQ && Globals::roll_pitch_deviation[0] < 0))
       rollAdjustmentFactor = SAME_SIDE_ROLL_ADJUSTMENT_FACTOR;
-    rollAdj = NybbleEEPROM::getAdaptiveCoefficient(i, 0) * rollAdjustmentFactor * abs(Globals::RollPitchDeviation[0]);
+    rollAdj = NybbleEEPROM::getAdaptiveCoefficient(i, 0) * rollAdjustmentFactor * abs(Globals::roll_pitch_deviation[0]);
 
   }
   else
-    rollAdj = NybbleEEPROM::getAdaptiveCoefficient(i, 0) * Globals::RollPitchDeviation[0];
+    rollAdj = NybbleEEPROM::getAdaptiveCoefficient(i, 0) * Globals::roll_pitch_deviation[0];
 
   // Add the pitch adjustment into the roll adjustment
   // When we are walking, postureOrWalkingFactor will be <1, so we care less about getting the roll adjustment perfect
-  return 0.1 * ((i > 3 ? postureOrWalkingFactor : 1) * rollAdj + NybbleEEPROM::getAdaptiveCoefficient(i, 1) * Globals::RollPitchDeviation[1]);
+  return 0.1 * ((i > 3 ? postureOrWalkingFactor : 1) * rollAdj + NybbleEEPROM::getAdaptiveCoefficient(i, 1) * Globals::roll_pitch_deviation[1]);
 }

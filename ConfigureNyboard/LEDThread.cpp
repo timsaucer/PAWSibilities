@@ -38,16 +38,17 @@
 
 */
 
-#ifndef _SKILLS_H_
-#define _SKILLS_H_
+#include "LEDThread.h"
 
-#define WalkingDOF 8
+LEDThread::LEDThread(uint16_t interval) : ProtoThread(interval) {
 
-class Skills {
+}
 
-  public:
+void LEDThread::initialize() {
 
-    static const char* newbilities[];
-};
+}
 
-#endif // _SKILLS_H_
+void LEDThread::runLoop() {
+  Serial.print("LEDThread ");
+  Serial.println(Globals::curr_time);
+}

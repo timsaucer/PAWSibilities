@@ -38,25 +38,17 @@
 
 */
 
-#ifndef _SERIAL_THREAD_H_
-#define _SERIAL_THREAD_H_
+#include "Globals.h"
 
-#include "ProtoThread.h"
-#include "Configuration.h"
+unsigned long Globals::curr_time = millis();
 
-/**
-   \class SerialThread
-   \brief Control the IR receiver
-*/
-class SerialThread : public ProtoThread {
-  public:
-    SerialThread(uint16_t interval);
+Command Globals::curr_command = Command(COMMAND_NONE);
+Command Globals::last_command = Command(COMMAND_NONE);
 
-    void initialize();
+Motion Globals::motion = Motion();
 
-  private:
-    void runLoop();
+bool Globals::eeprom_overflow = false;
 
-};
+float Globals::roll_pitch_deviation[2];
 
-#endif // _SERIAL_THREAD_H_
+static int16_t Globals::command_vals[MAX_COMMAND_VALUES];

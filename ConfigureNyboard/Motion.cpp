@@ -44,10 +44,27 @@
 Motion::Motion() :
   leg_period(1),
   head_period(1),
-  tail_period(1)
+  tail_period(1),
+  leg_timer(0),
+  head_timer(0),
+  tail_timer(0)
 {
+  int idx = 0;
+
   expectedRollPitch[0] = 0;
   expectedRollPitch[1] = 0;
+
+  for (idx = 0; idx < MAX_LEG_FRAMES * 8; idx++) {
+    leg_duty_angles[idx] = 0;
+  }
+
+  for (idx = 0; idx < MAX_HEAD_FRAMES * 2; idx++) {
+    head_duty_angles[idx] = 0;
+  }
+
+  for (idx = 0; idx < MAX_TAIL_FRAMES; idx++) {
+    tail_duty_angles[idx] = 0;
+  }
 }
 
 void Motion::loadNewbilityFromProgmem(LegNewbilities newbility) {
@@ -71,7 +88,7 @@ void Motion::loadPostureFromI2cEeprom(uint16_t onboard_eeprom_address) {
 
   loadInstinctDataFromI2cEeprom(leg_period, true, 16, temp_duty_angles, onboard_eeprom_address);
   head_duty_angles[0] = temp_duty_angles[JOINT_HEAD_PAN];
-  head_duty_angles[0] = temp_duty_angles[JOINT_HEAD_TILT];
+  head_duty_angles[1] = temp_duty_angles[JOINT_HEAD_TILT];
 
   tail_duty_angles[0] = temp_duty_angles[JOINT_TAIL_PAN];
   for (int idx = 0; idx < 8; idx++) {
@@ -142,6 +159,21 @@ void Motion::loadSkill(SkillType skill_type, unsigned int skill) {
   } else {
     loadInstinctFromI2cEeprom(skill_type, skill);
   }
+}
+
+void Motion::setSingleJoint(uint8_t index_joint, int8_t angle) {
+  leg_period = 1;
+  tail_period = 1;
+  head_period = 1;
+
+  if (index_joint == JOINT_HEAD_PAN)
+    head_duty_angles[0] = angle;
+  else if (index_joint == JOINT_HEAD_TILT)
+    head_duty_angles[1] = angle;
+  else if (index_joint == JOINT_TAIL_PAN)
+    tail_duty_angles[0] = angle;
+  else if (index_joint >= JOINT_FRONT_LEFT_PITCH && index_joint < JOINT_HIND_LEFT_KNEE)
+    leg_duty_angles[index_joint - JOINT_FRONT_LEFT_PITCH] = angle;
 }
 
 void Motion::info() {

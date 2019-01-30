@@ -38,15 +38,30 @@
 
 */
 
-#include "Globals.h"
+#ifndef _GLOBALS_H_
+#define _GLOBALS_H_
 
-unsigned long Globals::currTime = millis();
+#include <Adafruit_PWMServoDriver.h>
+#include "Enums.h"
+#include "Motion.h"
 
-Command Globals::currCommand = Command(COMMAND_NONE);
-Command Globals::lastCommand = Command(COMMAND_NONE);
+class Globals {
 
-Motion Globals::motion = Motion();
+  public:
 
-bool Globals::EEPROMOverflow = false;
+    static unsigned long curr_time;
 
-float Globals::RollPitchDeviation[2];
+    static Command curr_command;
+    static Command last_command;
+
+    static int16_t command_vals[MAX_COMMAND_VALUES];
+
+    static Motion motion;
+
+    static bool eeprom_overflow;
+
+    static float roll_pitch_deviation[2];
+
+};
+
+#endif // _GLOBALS_H_

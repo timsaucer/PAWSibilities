@@ -71,6 +71,10 @@ class Motion {
     uint8_t head_period;
     uint8_t tail_period;
 
+    uint8_t leg_timer;
+    uint8_t head_timer;
+    uint8_t tail_timer;
+
     int8_t expectedRollPitch[2];
 
     Motion();
@@ -112,8 +116,17 @@ class Motion {
     */
     void loadSkill(SkillType skill_type, unsigned int skill);
 
-    void info();
+    /**
+     * Sets a single joint to a value. Note: This will cause all other joints to stay at their 
+     * current position, so if this is issued in the middle of movement, all movement will stop
+     * at the FIRST position in the movement.
+     */
+    void setSingleJoint(uint8_t index_joint, int8_t angle);
 
+    /**
+     * Print useful debug information to the serial port.
+     */
+    void info();
 };
 
 

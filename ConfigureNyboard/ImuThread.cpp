@@ -123,7 +123,7 @@ void ImuThread::initialize() {
 
 void ImuThread::runLoop() {
   Serial.print("ImuThread ");
-  Serial.println(Globals::currTime);
+  Serial.println(Globals::curr_time);
 
 #ifdef GYRO
   checkBodyMotion();
@@ -228,8 +228,8 @@ void ImuThread::checkBodyMotion()  {
       }
       //calculate deviation
       for (byte i = 0; i < 2; i++) {
-        Globals::RollPitchDeviation[i] = ypr[2 - i] * DEG_PER_RAD - Globals::motion.expectedRollPitch[i];
-        Globals::RollPitchDeviation[i] = sign(ypr[2 - i]) * max(fabs(Globals::RollPitchDeviation[i]) - levelTolerance[i], 0);//filter out small angles
+        Globals::roll_pitch_deviation[i] = ypr[2 - i] * DEG_PER_RAD - Globals::motion.expectedRollPitch[i];
+        Globals::roll_pitch_deviation[i] = sign(ypr[2 - i]) * max(fabs(Globals::roll_pitch_deviation[i]) - levelTolerance[i], 0);//filter out small angles
       }
     }
   }

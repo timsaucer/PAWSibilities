@@ -38,61 +38,17 @@
 
 */
 
-#include "BuzzerThread.h"
+#ifndef _SKILLS_H_
+#define _SKILLS_H_
 
-BuzzerThread::BuzzerThread(uint16_t interval) : ProtoThread(interval) {
-}
+#define WalkingDOF 8
 
+class Skills {
 
-void BuzzerThread::runLoop() {
-  Serial.print("BuzzerThread ");
-  Serial.println(Globals::currTime);
-}
+  public:
 
-void BuzzerThread::beep(byte note, float duration, int pause, byte repeat) {
-  if (note == 0) {//rest note
-    analogWrite(BUZZER, 0);
-    delay(duration);
-    return;
-  }
-  int freq = 220 * pow(1.059463, note - 1); // 1.059463 comes from https://en.wikipedia.org/wiki/Twelfth_root_of_two
-  float period = 1000000.0 / freq;
-  for (byte r = 0; r < repeat; r++) {
-    for (float t = 0; t < duration * 1000; t += period) {
-      analogWrite(BUZZER, 150);      // Almost any value can be used except 0 and 255
-      // experiment to get the best tone
-      delayMicroseconds(period / 2);        // rise for half period
-      analogWrite(BUZZER, 0);       // 0 turns it off
-      delayMicroseconds(period / 2);        // down for half period
-    }
-    delay(pause);
-  }
-}
+    static const char* newbilities[];
+    
+};
 
-
-void BuzzerThread::playMelody(int start) {
-  byte len = (byte)EEPROM.read(start) / 2;
-  for (int i = 0; i < len; i++)
-    beep(EEPROM.read(start - 1 - i), 1000 / EEPROM.read(start - 1 - len - i), 100);
-}
-
-void BuzzerThread::meow(int repeat, int pause, int startF,  int endF, int increment) {
-  for (int r = 0; r < repeat; r++) {
-    for (int amp = startF; amp <= endF; amp += increment) {
-      analogWrite(BUZZER, amp);
-      delay(15); // wait for 15 milliseconds to allow the buzzer to vibrate
-    }
-    delay(500);
-    analogWrite(BUZZER, 0);
-    delay(pause);
-  }
-}
-
-void BuzzerThread::initialize() {
-  //opening music
-#if WalkingDOF == 8
-  pinMode(BUZZER, OUTPUT);
-  playMelody(MELODY);
-#endif
-
-}
+#endif // _SKILLS_H_

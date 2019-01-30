@@ -99,7 +99,7 @@ String IRReceiverThread::translateIR(decode_results results) {
 
 void IRReceiverThread::runLoop() {
   Serial.print("IRReceiverThread ");
-  Serial.println(Globals::currTime);
+  Serial.println(Globals::curr_time);
 
   decode_results results;
   if (irrecv.decode(&results)) {

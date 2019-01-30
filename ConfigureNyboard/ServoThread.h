@@ -54,19 +54,33 @@ class ServoThread : public ProtoThread {
 
     void initialize();
 
-    void shutServos();
+    void shutdownServos();
+    
+    void enableServos();
 
     void setCalib(uint8_t index, int8_t val);
 
-    void saveCalibs();
+    void saveCalibsToOnboardEeprom();
+
+    void resetCalibsFromOnboardEeprom();
 
     void calibratedPWM(byte i, float angle);
 
   private:
+  
+    /**
+     * The servo thread loop manages the head, tail, and leg motions in order. Each of these
+     * has a timer and period in the Motion object. Take the current ordered position, make an
+     * adjustment for the roll and pitch, and set the ordered angle. If the servos have been
+     * disabled, do nothing.
+     */
+    void runLoop();
+    
     // Current angle each joint should move to
     float duty_angles[16];
 
-    uint8_t timer = 0;
+    bool is_shutdown;
+
     float postureOrWalkingFactor;
 
     float pulsePerDegree[DOF] = {};
@@ -76,8 +90,6 @@ class ServoThread : public ProtoThread {
 
     // 0x40 is the default address for the servo driver
     Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x40);
-
-    void runLoop();
 
     /**
      * This function will move each servo to the value in duty_angles,
