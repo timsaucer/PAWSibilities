@@ -78,6 +78,12 @@ class ServoThread : public ProtoThread {
     // 0x40 is the default address for the servo driver
     Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x40);
 
+    /**
+     * The servo thread loop manages the head, tail, and leg motions in order. Each of these
+     * has a timer and period in the Motion object. Take the current ordered position, make an
+     * adjustment for the roll and pitch, and set the ordered angle. If the servos have been
+     * disabled, do nothing.
+     */
     void runLoop();
 
     /**

@@ -125,7 +125,6 @@ void ServoThread::runLoop() {
   for (int idx_joint=0; idx_joint<8; idx_joint++) {
     idx_duty = Globals::motion.leg_timer * Globals::motion.leg_period + idx_joint;
     calibratedPWM(JOINT_FRONT_LEFT_PITCH + idx_joint, Globals::motion.leg_duty_angles[idx_duty] + getRollPitchAdjustment(JOINT_FRONT_LEFT_PITCH + idx_joint));
-      
   }
 
   Globals::motion.head_timer = (Globals::motion.head_timer + 1) % Globals::motion.head_period;
