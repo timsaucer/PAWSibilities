@@ -52,8 +52,6 @@
 ServoThread servo_thread(0);
 SerialThread serial_thread(0);
 
-bool printMPU = false;
-
 /**
    Store constants on the onboard EEPROM.
 */
@@ -219,47 +217,5 @@ void loop() {
 
   Globals::curr_command = COMMAND_NONE;
 
-
-  //    if (strcmp(cmd, "") && strcmp(lastCmd, cmd) ) {
-  //      PT("compare lastCmd ");
-  //      PT(lastCmd);
-  //      PT(" with newCmd ");
-  //      PT(token);
-  //      PT(cmd);
-  //      PT("\n");
-  //      if (token == 'w') {}; //some words for undefined behaviors
-
-  //      if (token == 'k') { //validating key
-  // TODO
-  //        motion.loadBySkillName(cmd);
-  //motion.info();
-
-  //        if (strcmp(cmd, "balance") && strcmp(cmd, "lifted") && strcmp(cmd, "dropped") )
-  //          strcpy(lastCmd, cmd);
-  // if posture, start jointIdx from 0
-  // if gait, walking DOF = 8, start jointIdx from 8
-  //          walking DOF = 12, start jointIdx from 4
-  // TODO
-  //        firstValidJoint = (motion.period == 1) ? 0 : DOF - WalkingDOF;
-  //        jointIdx = firstValidJoint;
-  //        transform( motion.dutyAngles, firstValidJoint, 2);
-  //        if (!strcmp(cmd, "rest")) {
-  //          servo_thread.shutServos();
-  //          token = 'd';
-  //        }
-  //      else {
-  //        lastCmd[0] = token;
-  //        memset(lastCmd + 1, '\0', CMD_LEN - 1);
-  //      }
-
-
-  //motion block
-  {
-    if (printMPU) {
-      mpu.getMotion6(ag, ag + 1, ag + 2, ag + 3, ag + 4, ag + 5);
-      PTLF("ax\tay\taz\tgx\tgy\tgz: ");
-      // TODO
-      //      printList(ag, 6);
-    }
-  }
+  servo_thread.checkThread();
 }
