@@ -115,46 +115,23 @@ void ServoThread::runLoop() {
   if (is_shutdown)
     return;
 
-  byte firstWalkingJoint = (Globals::motion.leg_period == 1) ? 0 : DOF - WalkingDOF;
-  postureOrWalkingFactor = (Globals::motion.leg_period == 1 ? 1 : WALKING_ROLL_ADJUSTMENT_FACTOR);
-  byte jointIdx = firstWalkingJoint;
+  uint8_t idx_duty = Globals::motion.head_timer * Globals::motion.head_period;
+  calibratedPWM(JOINT_HEAD_PAN, Globals::motion.head_duty_angles[idx_duty] + getRollPitchAdjustment(JOINT_HEAD_PAN));
+  calibratedPWM(JOINT_HEAD_TILT, Globals::motion.head_duty_angles[idx_duty + 1] + getRollPitchAdjustment(JOINT_HEAD_TILT));
 
-  // There are two options for motion:
-  //   (1) We've been given a posture. It has all 16 DOF specified.
-  //   (2) We've been given a motion for the body, the head, and the tail (each is independent of the others)
-  // For now, the cat tries to move as fast as possible through all of the positions
-  // We can slow it down by setting the update rate on this thread.
+  idx_duty = Globals::motion.tail_timer * Globals::motion.tail_period;
+  calibratedPWM(JOINT_TAIL_PAN, Globals::motion.head_duty_angles[idx_duty] + getRollPitchAdjustment(JOINT_TAIL_PAN));
 
-  if (Globals::motion.is_posture) {
-    // Hold a static posture
-  } else {
-    // We should have 3 independent movements: legs, head, and tail
-    // Only the legs should affect the orientation of the torso where the IMU resides.
+  for (int idx_joint=0; idx_joint<8; idx_joint++) {
+    idx_duty = Globals::motion.leg_timer * Globals::motion.leg_period + idx_joint;
+    calibratedPWM(JOINT_FRONT_LEFT_PITCH + idx_joint, Globals::motion.leg_duty_angles[idx_duty] + getRollPitchAdjustment(JOINT_FRONT_LEFT_PITCH + idx_joint));
+      
   }
 
+  Globals::motion.head_timer = (Globals::motion.head_timer + 1) % Globals::motion.head_period;
+  Globals::motion.tail_timer = (Globals::motion.tail_timer + 1) % Globals::motion.tail_period;
+  Globals::motion.leg_timer = (Globals::motion.leg_timer + 1) % Globals::motion.leg_period;
 
-
-
-
-  // ADD NOTE ABOUT HOW WE'RE ASSUMING THE NYBBLE DESIGN. PREVIOUS CODE WORKED WITH OTHER OPEN CAT PROJECTS
-
-  // PReviously the loop() would update a single servo at a time. jointIdx causes it to step to the next one.
-
-
-  if (jointIdx < firstWalkingJoint && Globals::motion.leg_period > 1) {
-    calibratedPWM(jointIdx, getRollPitchAdjustment(jointIdx));
-  }
-  else if (jointIdx >= firstWalkingJoint) {
-    int dutyIdx = Globals::motion.leg_timer * WalkingDOF + jointIdx - firstWalkingJoint;
-    calibratedPWM(jointIdx, Globals::motion.leg_duty_angles[dutyIdx] + getRollPitchAdjustment(jointIdx));
-  }
-  jointIdx++;
-
-  if (jointIdx == DOF) {
-    jointIdx = 0;
-    //PTL((float)analogRead(BATT) *  5.0 / 1024.0*3);
-    Globals::motion.leg_timer = (Globals::motion.leg_timer + 1) % Globals::motion.leg_period;
-  }
 }
 
 void ServoThread::transform( char * target,  float speedRatio = 1, byte offset = 0) {
