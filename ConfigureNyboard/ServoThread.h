@@ -54,7 +54,7 @@ class ServoThread : public ProtoThread {
 
     void initialize();
 
-    void shutServos();
+    void shutdownServos();
 
     void setCalib(uint8_t index, int8_t val);
 
@@ -66,7 +66,8 @@ class ServoThread : public ProtoThread {
     // Current angle each joint should move to
     float duty_angles[16];
 
-    uint8_t timer = 0;
+    bool is_shutdown;
+
     float postureOrWalkingFactor;
 
     float pulsePerDegree[DOF] = {};

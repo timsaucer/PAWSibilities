@@ -40,7 +40,10 @@
 
 #include "ServoThread.h"
 
-ServoThread::ServoThread(uint16_t interval) : ProtoThread(interval) {
+ServoThread::ServoThread(uint16_t interval) : 
+  ProtoThread(interval),
+  is_shutdown(false)
+{
 }
 
 void ServoThread::initialize() {
@@ -66,17 +69,18 @@ void ServoThread::initialize() {
     delay(100);
   }
   randomSeed(analogRead(0));//use the fluctuation of voltage caused by servos as entropy pool
-  shutServos();
+  shutdownServos();
   //      token = 'd';
   Globals::curr_command = COMMAND_REST;
 
 }
 
-void ServoThread::shutServos() {
+void ServoThread::shutdownServos() {
   delay(100);
   for (int8_t i = DOF - 1; i >= 0; i--) {
     pwm.setPWM(i, 0, 4096);
   }
+  is_shutdown = true;
 }
 
 void ServoThread::setCalib(uint8_t index, int8_t val) {
@@ -97,6 +101,7 @@ void ServoThread::moveToCalibratedPositions() {
 }
 
 void ServoThread::calibratedPWM(byte i, float angle) {
+  is_shutdown = false;
   /*float angle = max(-SERVO_ANG_RANGE/2, min(SERVO_ANG_RANGE/2, angle));
     if (i > 3 && i < 8)
     angle = max(-5, angle);*/
@@ -107,6 +112,8 @@ void ServoThread::calibratedPWM(byte i, float angle) {
 }
 
 void ServoThread::runLoop() {
+  if (is_shutdown)
+    return;
 
   byte firstWalkingJoint = (Globals::motion.leg_period == 1) ? 0 : DOF - WalkingDOF;
   postureOrWalkingFactor = (Globals::motion.leg_period == 1 ? 1 : WALKING_ROLL_ADJUSTMENT_FACTOR);
@@ -127,7 +134,7 @@ void ServoThread::runLoop() {
 
 
 
-  
+
 
   // ADD NOTE ABOUT HOW WE'RE ASSUMING THE NYBBLE DESIGN. PREVIOUS CODE WORKED WITH OTHER OPEN CAT PROJECTS
 
@@ -138,7 +145,7 @@ void ServoThread::runLoop() {
     calibratedPWM(jointIdx, getRollPitchAdjustment(jointIdx));
   }
   else if (jointIdx >= firstWalkingJoint) {
-    int dutyIdx = timer * WalkingDOF + jointIdx - firstWalkingJoint;
+    int dutyIdx = Globals::motion.leg_timer * WalkingDOF + jointIdx - firstWalkingJoint;
     calibratedPWM(jointIdx, Globals::motion.leg_duty_angles[dutyIdx] + getRollPitchAdjustment(jointIdx));
   }
   jointIdx++;
@@ -146,7 +153,7 @@ void ServoThread::runLoop() {
   if (jointIdx == DOF) {
     jointIdx = 0;
     //PTL((float)analogRead(BATT) *  5.0 / 1024.0*3);
-    timer = (timer + 1) % Globals::motion.leg_period;
+    Globals::motion.leg_timer = (Globals::motion.leg_timer + 1) % Globals::motion.leg_period;
   }
 }
 
@@ -170,8 +177,8 @@ void ServoThread::transform( char * target,  float speedRatio = 1, byte offset =
 void ServoThread::behavior(int n, char** skill, float *speedRatio, int *pause) {
   for (byte i = 0; i < n; i++) {
     // TODO
-//    Globals::motion.loadBySkillName(skill[i]);
-//    transform(Globals::motion.leg_duty_angles, speedRatio[i]);
+    //    Globals::motion.loadBySkillName(skill[i]);
+    //    transform(Globals::motion.leg_duty_angles, speedRatio[i]);
     delay(pause[i]);
   }
 

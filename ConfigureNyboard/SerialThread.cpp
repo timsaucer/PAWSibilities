@@ -81,9 +81,6 @@ void SerialThread::runLoop() {
       case 'd':
         Globals::motion.loadSkill(INSTINCT_POSTURE, POSTURE_REST);
         Globals::curr_command = COMMAND_MOVE_TO_POSITION;
-        //      transform(motion.dutyAngles);
-        //      PTLF("shut down servos");
-        //      servo_thread.shutServos();
         break;
       case 's':
         PTLF("save calibration");

@@ -185,6 +185,38 @@ void setup() {
 
 void loop() {
   serial_thread.checkThread();
+
+  switch (Globals::curr_command) {
+    case COMMAND_HELP:
+      break;
+    case COMMAND_REST:
+      break;
+    case COMMAND_CALIBRATE_SERVO:
+      break;
+    case COMMAND_SAVE_SERVO_CALIBRATION:
+      break;
+    case COMMAND_ABORT_SERVO_CALIBRATION:
+      break;
+    case COMMAND_MOVE_CONTINUOUSLY:
+      Globals::motion.loadSkill(Globals::command_vals[0], Globals::command_vals[1]);
+      break;
+    case COMMAND_MOVE_TO_POSITION:
+        //      transform(motion.dutyAngles);
+        //      PTLF("shut down servos");
+        //      servo_thread.shutServos();
+      break;
+    case COMMAND_MOVE_JOINT:
+      break;
+    case COMMAND_NONE:
+      break;
+    case COMMAND_UNDEFINED:
+      break;
+    default:
+      break;
+  }
+
+  Globals::curr_command = COMMAND_NONE;
+
   if (Globals::curr_command != COMMAND_NONE) {
 
     //    if (strcmp(cmd, "") && strcmp(lastCmd, cmd) ) {

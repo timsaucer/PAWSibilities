@@ -71,6 +71,10 @@ class Motion {
     uint8_t head_period;
     uint8_t tail_period;
 
+    uint8_t leg_timer;
+    uint8_t head_timer;
+    uint8_t tail_timer;
+
     int8_t expectedRollPitch[2];
 
     Motion();

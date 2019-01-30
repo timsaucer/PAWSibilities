@@ -44,10 +44,27 @@
 Motion::Motion() :
   leg_period(1),
   head_period(1),
-  tail_period(1)
+  tail_period(1),
+  leg_timer(0),
+  head_timer(0),
+  tail_timer(0)
 {
+  int idx = 0;
+  
   expectedRollPitch[0] = 0;
   expectedRollPitch[1] = 0;
+
+  for (idx=0; idx < MAX_LEG_FRAMES * 8; idx++) {
+    leg_duty_angles[idx] = 0;
+  }
+  
+  for (idx=0; idx < MAX_HEAD_FRAMES * 2; idx++) {
+    head_duty_angles[idx] = 0;
+  }
+  
+  for (idx=0; idx < MAX_TAIL_FRAMES; idx++) {
+    tail_duty_angles[idx] = 0;
+  }
 }
 
 void Motion::loadNewbilityFromProgmem(LegNewbilities newbility) {
