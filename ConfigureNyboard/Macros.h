@@ -42,32 +42,30 @@
 #define _MACROS_H_
 
 #include <EEPROM.h>
+#include <arduino.h>
 
 #define PT(s) Serial.print(s)  //makes life easier
 #define PTL(s) Serial.println(s)
 #define PTF(s) Serial.print(F(s))//trade flash memory for dynamic memory with F() function
 #define PTLF(s) Serial.println(F(s))
 
-#define DEG_PER_RAD 57.295779513082321 // 180 / pi
-#define RAD_PER_DEG 0.017453292519943  //  pi / 180
-
-inline byte pin(byte idx) {
+inline char pin(char idx) {
   return EEPROM.read(PIN + idx);
 }
-inline byte remapPin(byte offset, byte idx) {
+inline char remapPin(char offset, char idx) {
   return EEPROM.read(offset + idx);
 }
-inline byte servoAngleRange(byte idx) {
+inline char servoAngleRange(char idx) {
   return EEPROM.read(SERVO_ANGLE_RANGE + idx);
 }
-inline int8_t middleShift(byte idx) {
+inline int8_t middleShift(char idx) {
   return EEPROM.read( MID_SHIFT + idx);
 }
 
-inline int8_t rotationDirection(byte idx) {
+inline int8_t rotationDirection(char idx) {
   return EEPROM.read(ROTATION_DIRECTION + idx);
 }
-inline int8_t servoCalib(byte idx) {
+inline int8_t servoCalib(char idx) {
   return EEPROM.read( CALIB + idx);
 }
 
@@ -75,8 +73,8 @@ template <typename T> int8_t sign(T val) {
   return (T(0) < val) - (val < T(0));
 }
 
-template <typename T> void printList(T * arr, byte len = DOF) {
-  for (byte i = 0; i < len; i++) {
+template <typename T> void printList(T * arr, char len = DOF) {
+  for (char i = 0; i < len; i++) {
     PT((T)(arr[i]));
     PT('\t');
   }

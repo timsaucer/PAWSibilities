@@ -14,8 +14,8 @@
    Aug. 27, 2018
    Copyright (c) 2018 Petoi LLC.
 
-   This sketch may also includes others' codes under MIT or other open source liscence.
-   Check those liscences in corresponding module test folders.
+   This sketch may also includes others' codes under MIT or other open source license.
+   Check those licenses in corresponding module test folders.
    Feel free to contact us if you find any missing references.
 
    The MIT License
@@ -51,4 +51,4 @@ bool Globals::eeprom_overflow = false;
 
 float Globals::roll_pitch_deviation[2];
 
-static int16_t Globals::command_vals[MAX_COMMAND_VALUES];
+int16_t Globals::command_vals[MAX_COMMAND_VALUES];

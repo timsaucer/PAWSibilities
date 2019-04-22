@@ -84,7 +84,7 @@
 ///////////////////////////////////   CONFIGURATION   /////////////////////////////
 //Change this 3 variables if you want to fine tune the skecth to your needs.
 int discard = 100;
-int buffersize = 1000;   //Amount of readings used to average, make it higher to get more precision but sketch will be slower  (default:1000)
+int buffer_size = 1000;   //Amount of readings used to average, make it higher to get more precision but sketch will be slower  (default:1000)
 int acel_deadzone = 8;   //Acelerometer error allowed, make it lower to get more precision, but sketch may not converge  (default:8)
 int giro_deadzone = 1;   //Giro error allowed, make it lower to get more precision, but sketch may not converge  (default:1)
 
@@ -96,25 +96,25 @@ int giro_deadzone = 1;   //Giro error allowed, make it lower to get more precisi
 MPU6050 mpu(0x68); // <-- use for AD0 high
 
 int ag[6];      //int16_t ax, ay, az, gx, gy, gz;
-int agMean[6];  //mean_ax, mean_ay, mean_az, mean_gx, mean_gy, mean_gz;
-int agOffset[6];  //ax_offset, ay_offset, az_offset, gx_offset, gy_offset, gz_offset;
-int mpuOffset[6];
+int ag_mean[6];  //mean_ax, mean_ay, mean_az, mean_gx, mean_gy, mean_gz;
+int ag_offset[6];  //ax_offset, ay_offset, az_offset, gx_offset, gy_offset, gz_offset;
+int mpu_offset[6];
 
 void meanMpuSensors() {
   long i = 0;
-  long agBuff[] = {0, 0, 0, 0, 0, 0}; //buff_ax = 0, buff_ay = 0, buff_az = 0, buff_gx = 0, buff_gy = 0, buff_gz = 0;
+  long ag_buff[] = {0, 0, 0, 0, 0, 0}; //buff_ax = 0, buff_ay = 0, buff_az = 0, buff_gx = 0, buff_gy = 0, buff_gz = 0;
 
-  while (i < (buffersize + discard + 1)) {
+  while (i < (buffer_size + discard + 1)) {
     // read raw accel/gyro measurements from device
     mpu.getMotion6(ag, ag + 1, ag + 2, ag + 3, ag + 4, ag + 5);
 
-    if (i > discard && i <= (buffersize + discard)) { //First 100 measures are discarded
+    if (i > discard && i <= (buffer_size + discard)) { //First 100 measures are discarded
       for (byte i = 0; i < 6; i++)
-        agBuff[i] += ag[i];
+        ag_buff[i] += ag[i];
     }
-    if (i == (buffersize + discard)) {
+    if (i == (buffer_size + discard)) {
       for (byte i = 0; i < 6; i++)
-        agMean[i] = agBuff[i] / buffersize;
+        ag_mean[i] = ag_buff[i] / buffer_size;
     }
     i++;
     delay(2); //Needed so we don't get repeated measures
@@ -127,31 +127,31 @@ void meanMpuSensors() {
 */
 void performMpuCalibration() {
   for (int i = 0; i < 6; i++) {
-    agOffset[i] = ((i == 2 ? 16384 : 0) - agMean[i]) / 8; //agOffset[2] is az_offset
+    ag_offset[i] = ((i == 2 ? 16384 : 0) - ag_mean[i]) / 8; //agOffset[2] is az_offset
   }
 
   int axes_ready = 0;
   while (axes_ready != 6) {
     axes_ready = 0;
-    mpu.setXAccelOffset(agOffset[0]);
-    mpu.setYAccelOffset(agOffset[1]);
-    mpu.setZAccelOffset(agOffset[2]);
-    mpu.setXGyroOffset(agOffset[3]);
-    mpu.setYGyroOffset(agOffset[4]);
-    mpu.setZGyroOffset(agOffset[5]);
+    mpu.setXAccelOffset(ag_offset[0]);
+    mpu.setYAccelOffset(ag_offset[1]);
+    mpu.setZAccelOffset(ag_offset[2]);
+    mpu.setXGyroOffset(ag_offset[3]);
+    mpu.setYGyroOffset(ag_offset[4]);
+    mpu.setZGyroOffset(ag_offset[5]);
 
     meanMpuSensors();
 
     for (int i = 0; i < 6; i++) {
       int tolerance = (i < 3) ? acel_deadzone : giro_deadzone;
-      if (abs((i == 2 ? 16384 : 0) - agMean[i]) <= tolerance) {
+      if (abs((i == 2 ? 16384 : 0) - ag_mean[i]) <= tolerance) {
         PT(i + 1);
         //        beep(i * 2 + (i == 3 ? 0 : 1), 100, 10); // note F to G takes half tone
         axes_ready++;
       }
       else {
         PTF(".");
-        agOffset[i] -= (agMean[i] - (i == 2 ? 16384 : 0)) / (tolerance == 1 ? 3 : tolerance);
+        ag_offset[i] -= (ag_mean[i] - (i == 2 ? 16384 : 0)) / (tolerance == 1 ? 3 : tolerance);
       }
     }
     PTL();
@@ -188,21 +188,21 @@ void runMpuCalibrationRoutines() {
   PTLF("Readings should be close to:\t0\t0\t16384\t0\t0\t0");
 
   PTF("Sensor readings with offsets:\t");
-  printList(agMean, 6);
+  printList(ag_mean, 6);
 
   PTF("Your calibration offsets:\t");
-  printList(agOffset, 6);
+  printList(ag_offset, 6);
 
   PTLF("The offsets are saved and automatically sent to mpu.setXAccelOffset(yourOffset)\n");
   for (byte i = 0; i < 6; i++) {
-    mpuOffset[i] = agOffset[i];
-    NybbleEEPROM::WriteIntToOnboardEEPROM(MPUCALIB + i * 2, mpuOffset[i]);
+    mpu_offset[i] = ag_offset[i];
+    NybbleEEPROM::WriteIntToOnboardEEPROM(MPUCALIB + i * 2, mpu_offset[i]);
   }
 
-  mpu.setXAccelOffset(agOffset[0]);
-  mpu.setYAccelOffset(agOffset[1]);
-  mpu.setZAccelOffset(agOffset[2]);
-  mpu.setXGyroOffset(agOffset[3]);
-  mpu.setYGyroOffset(agOffset[4]);
-  mpu.setZGyroOffset(agOffset[5]);
+  mpu.setXAccelOffset(ag_offset[0]);
+  mpu.setYAccelOffset(ag_offset[1]);
+  mpu.setZAccelOffset(ag_offset[2]);
+  mpu.setXGyroOffset(ag_offset[3]);
+  mpu.setYGyroOffset(ag_offset[4]);
+  mpu.setZGyroOffset(ag_offset[5]);
 }

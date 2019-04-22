@@ -41,6 +41,10 @@
 #include "ImuThread.h"
 #include "Globals.h"
 
+
+#define DEG_PER_RAD 57.295779513082321 //  (180 / pi)
+#define RAD_PER_DEG 0.0174532925199430 //  (pi / 180)
+
 ImuThread::ImuThread(uint16_t interval) :
   ProtoThread(interval),
   mpuIntStatus(0),
@@ -130,7 +134,7 @@ void ImuThread::runLoop() {
 #endif
 }
 
-static void ImuThread::dmpDataReady() {
+void ImuThread::dmpDataReady() {
   mpuInterrupt = true;
 }
 

@@ -103,52 +103,52 @@ void IRReceiverThread::runLoop() {
 
   decode_results results;
   if (irrecv.decode(&results)) {
-    String irCmd = translateIR(results);
+    String ir_cmd = translateIR(results);
     //TODO
     char* newCmd = "d";
     char token = 'd';
-    if (irCmd != "") {
-      strcpy(newCmd, irCmd.c_str());
-      if (!strcmp(newCmd, "d"))
-        token = 'd';
-      else if (!strcmp(newCmd, "rc")) {
-        char **bList = new char*[10];
-        bList[0] = "rc1";
-        bList[1] = "rc2";
-        bList[2] = "rc3";
-        bList[3] = "rc4";
-        bList[4] = "rc5";
-        bList[5] = "rc6";
-        bList[6] = "rc7";
-        bList[7] = "rc8";
-        bList[8] = "rc9";
-        bList[9] = "rc10";
-        float speedRatio[10] = {2, 2, 2, 10, 5, 10, 5, 5, 5, 2};
-        int pause[10] = {500, 500, 500, 0, 0, 0, 0, 0, 500, 100};
-//        TODO
-//        behavior( 10, bList, speedRatio, pause);
-        strcpy(newCmd, "rest");
-
-      }
-      else if (!strcmp(newCmd, "pu")) {
-        char **bList = new char*[2];
-        bList[0] = "pu1";
-        bList[1] = "pu2";
-        float speedRatio[2] = {2, 2};
-        int pause[2] = {0, 0};
-        // TODO
-//        for (byte i = 0; i < 3; i++)
-//          behavior(2, bList, speedRatio, pause);
-        strcpy(newCmd, "rest");
-//         TODO
-//        meow();
-
-      }
-      else
-        token = 'k';
-//      TODO
-//      newCmdIdx = 2;
-    }
+//    if (irCmd != "") {
+//      strcpy(newCmd, irCmd.c_str());
+//      if (!strcmp(newCmd, "d"))
+//        token = 'd';
+//      else if (!strcmp(newCmd, "rc")) {
+//        char **bList = new char*[10];
+//        bList[0] = "rc1";
+//        bList[1] = "rc2";
+//        bList[2] = "rc3";
+//        bList[3] = "rc4";
+//        bList[4] = "rc5";
+//        bList[5] = "rc6";
+//        bList[6] = "rc7";
+//        bList[7] = "rc8";
+//        bList[8] = "rc9";
+//        bList[9] = "rc10";
+//        float speedRatio[10] = {2, 2, 2, 10, 5, 10, 5, 5, 5, 2};
+//        int pause[10] = {500, 500, 500, 0, 0, 0, 0, 0, 500, 100};
+////        TODO
+////        behavior( 10, bList, speedRatio, pause);
+//        strcpy(newCmd, "rest");
+//
+//      }
+//      else if (!strcmp(newCmd, "pu")) {
+//        char **bList = new char*[2];
+//        bList[0] = "pu1";
+//        bList[1] = "pu2";
+//        float speedRatio[2] = {2, 2};
+//        int pause[2] = {0, 0};
+//        // TODO
+////        for (byte i = 0; i < 3; i++)
+////          behavior(2, bList, speedRatio, pause);
+//        strcpy(newCmd, "rest");
+////         TODO
+////        meow();
+//
+//      }
+//      else
+//        token = 'k';
+////      TODO
+////      newCmdIdx = 2;
+//    }
     irrecv.resume(); // receive the next value
 
   }

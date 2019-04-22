@@ -43,7 +43,7 @@
 
 // tone: pause,1,  2,  3,  4,  5,  6,  7,  1,  2, 3,
 // code: 0,    1,  3,  5,  6,  8,  10, 12, 13, 15, 17
-byte melody[] = {8, 13, 10, 13, 8,  0,  5,  8,  3,  5, 8,
+char melody[] = {8, 13, 10, 13, 8,  0,  5,  8,  3,  5, 8,
                  8, 8,  32, 32, 8, 32, 32, 32, 32, 32, 8,
 };
 
@@ -52,7 +52,7 @@ byte melody[] = {8, 13, 10, 13, 8,  0,  5,  8,  3,  5, 8,
 #define TAIL
 #define X_LEG
 
-byte pins[] = {7, 0, 8, 15,
+char pins[] = {7, 0, 8, 15,
                6, 1, 14, 9,
                5, 2, 13, 10,
                4, 3, 12, 11
@@ -90,7 +90,7 @@ int8_t rotationDirections[] = {1, -1, 1, 1,
 };
 
 #ifndef KUDO
-byte servoAngleRanges[] =  {MG90D_RANGE, MG90D_RANGE, MG90D_RANGE, MG90D_RANGE,
+char servoAngleRanges[] =  {MG90D_RANGE, MG90D_RANGE, MG90D_RANGE, MG90D_RANGE,
                             MG92B_RANGE, MG92B_RANGE, MG92B_RANGE, MG92B_RANGE,
                             MG92B_RANGE, MG92B_RANGE, MG92B_RANGE, MG92B_RANGE,
                             MG92B_RANGE, MG92B_RANGE, MG92B_RANGE, MG92B_RANGE
@@ -119,6 +119,7 @@ float adaptiveParameterArray[16][NUM_ADAPT_PARAM] = {
   {lRF, lPF}, {lRF, lPF}, { -lRF, lPF}, { -lRF, lPF}
 };
 #endif
+
 
 #define DEG_PER_RAD 57.295779513082321 //  (180 / pi)
 #define RAD_PER_DEG 0.0174532925199430 //  (pi / 180)

@@ -41,13 +41,18 @@
 #ifndef _ENUMS_H_
 #define _ENUMS_H_
 
+// Note: When passing a skill around the system it will be a uint8
+//       skill = skill_type * NUM_SKILL_TYPES + skill_value
+// skill_value = skill % NUM_SKILL_TYPES
+//  skill_type = skill / NUM_SKILL_TYPES
+
 enum SkillType
 {
   INSTINCT_POSTURE,
   INSTINCT_LEG_MOVEMENT,
   INSTINCT_HEAD_MOVEMENT,
   INSTINCT_TAIL_MOVEMENT,
-  NEWBILITY_LEG_MOVEMENT,
+  NUM_SKILL_TYPES
 };
 
 enum Posture
@@ -117,12 +122,6 @@ enum TailInstinct
   INSTINCT_TAIL_SMALL_WAG,
   INSTINCT_TAIL_LARGE_WAG,
   NUM_INSTINCTS_TAIL
-};
-
-enum LegNewbilities
-{
-  NEWBILITY_LEGS_STAIR = 0,         // stair
-  NUM_NEWBILITIES
 };
 
 enum Command

@@ -107,11 +107,11 @@
 #define PWM_FACTOR 4
 #define MG92B_MIN 170*PWM_FACTOR
 #define MG92B_MAX 550*PWM_FACTOR
-#define MG92B_RANGE 150
+#define MG92B_RANGE (char)150
 
 #define MG90D_MIN 158*PWM_FACTOR //so mg92b and mg90 are not centered at the same signal
 #define MG90D_MAX 515*PWM_FACTOR
-#define MG90D_RANGE 150
+#define MG90D_RANGE (char)150
 
 #define KUDO_MIN 115*PWM_FACTOR
 #define KUDO_MAX 621*PWM_FACTOR

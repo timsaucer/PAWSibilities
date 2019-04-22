@@ -43,7 +43,6 @@
 BuzzerThread::BuzzerThread(uint16_t interval) : ProtoThread(interval) {
 }
 
-
 void BuzzerThread::runLoop() {
   Serial.print("BuzzerThread ");
   Serial.println(Globals::curr_time);

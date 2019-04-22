@@ -53,7 +53,7 @@ class ProtoThread {
 
     virtual ~ProtoThread();
 
-    void checkThread();
+    unsigned long checkThread();
 
     virtual void initialize() = 0;
 

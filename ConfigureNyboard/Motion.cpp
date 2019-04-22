@@ -42,6 +42,7 @@
 #include "Motion.h"
 
 Motion::Motion() :
+  is_posture(true),
   leg_period(1),
   head_period(1),
   tail_period(1),
@@ -64,19 +65,6 @@ Motion::Motion() :
 
   for (idx = 0; idx < MAX_TAIL_FRAMES; idx++) {
     tail_duty_angles[idx] = 0;
-  }
-}
-
-void Motion::loadNewbilityFromProgmem(LegNewbilities newbility) {
-  char* newbility_array = Skills::newbilities[newbility];
-
-  leg_period = newbility_array[0];
-  for (int i = 0; i < 2; i++) {
-    expectedRollPitch[i] = newbility_array[i + 1];
-  }
-
-  for (int j = 0; j < leg_period * 8; j++) {
-    leg_duty_angles[j] = newbility_array[j + 3];
   }
 }
 
@@ -129,7 +117,7 @@ void Motion::loadInstinctDataFromI2cEeprom(uint8_t &period, bool update_roll_pit
   }
 }
 
-void Motion::loadInstinctFromI2cEeprom(SkillType skill_type, unsigned int skill) {
+void Motion::loadSkill(SkillType skill_type, unsigned int skill) {
   unsigned int onboard_eeprom_address = SKILLS + 2 * skill;
 
   switch (skill_type) {
@@ -150,14 +138,6 @@ void Motion::loadInstinctFromI2cEeprom(SkillType skill_type, unsigned int skill)
       break;
     default:
       break;
-  }
-}
-
-void Motion::loadSkill(SkillType skill_type, unsigned int skill) {
-  if (skill_type == NEWBILITY_LEG_MOVEMENT) {
-    loadNewbilityFromProgmem(skill);
-  } else {
-    loadInstinctFromI2cEeprom(skill_type, skill);
   }
 }
 

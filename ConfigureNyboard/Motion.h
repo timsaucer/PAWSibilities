@@ -80,12 +80,6 @@ class Motion {
     Motion();
 
     /**
-       The newbilities are only leg movements. This will copy their data over to the leg_duty_angles
-       and leg_period.
-    */
-    void loadNewbilityFromProgmem(LegNewbilities newbility);
-
-    /**
      * Load data from I2C eeprom into the appropriate duty angles.
      * @param period Pass the appropriate period to update (ie: leg_period)
      * @param update_roll_pitch If true, expected_roll_pitch_ will be updated
@@ -101,14 +95,6 @@ class Motion {
      * @param i2c_eeprom_address Address to load data from
      */
     void loadPostureFromI2cEeprom(uint16_t onboard_eeprom_address);
-
-    /**
-       Onboard EEPROM stores the address of the instinct in question. This function determines the
-       i2c address of the instinct data and then calls the loadInstinctDataFromI2cEeprom function.
-       @param skill_type What type of skill to load (ie: INSTINCT_POSTURE, INSTINCT_LEG_MOVEMENT)
-       @param skill enum value for the skill to load
-    */
-    void loadInstinctFromI2cEeprom(SkillType skill_type, unsigned int skill);
 
     /**
        Load a skill. If the skill is a movement skill (head, tail, or legs) then the last posture of

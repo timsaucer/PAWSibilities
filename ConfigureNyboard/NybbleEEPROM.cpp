@@ -44,24 +44,24 @@
 
 void NybbleEEPROM::WriteIntToOnboardEEPROM(int address, int value)
 {
-  byte highByte = ((value >> 8) & 0xFF);
-  byte lowByte = ((value >> 0) & 0xFF);
+  char highchar = ((value >> 8) & 0xFF);
+  char lowchar = ((value >> 0) & 0xFF);
   
-  EEPROM.update(address, highByte);
-  EEPROM.update(address + 1, lowByte);
+  EEPROM.update(address, highchar);
+  EEPROM.update(address + 1, lowchar);
 }
 
 int NybbleEEPROM::ReadIntFromOnboardEEPROM(int address)
 {
-  byte highByte = EEPROM.read(address);
-  byte lowByte  = EEPROM.read(address + 1);
+  char highchar = EEPROM.read(address);
+  char lowchar  = EEPROM.read(address + 1);
   
-  return ((lowByte << 0) & 0xFF) + ((highByte << 8) & 0xFF00);
+  return ((lowchar << 0) & 0xFF) + ((highchar << 8) & 0xFF00);
 }
 
 void NybbleEEPROM::copyDataFromPgmToI2cEeprom(unsigned int &eeAddress, unsigned int pgmAddress) {
-  uint8_t period = pgm_read_byte(pgmAddress);//automatically cast to char*
-  byte frameSize = period > 1 ? WalkingDOF : 16;
+  uint8_t period = pgm_read_byte_near(pgmAddress);//automatically cast to char*
+  char frameSize = period > 1 ? WalkingDOF : 16;
   int len = period * frameSize + SKILL_HEADER;
   int writtenToEE = 0;
   while (len > 0) {
@@ -71,7 +71,7 @@ void NybbleEEPROM::copyDataFromPgmToI2cEeprom(unsigned int &eeAddress, unsigned 
     /*PTF("\n* current address: ");
       PTL((unsigned int)eeAddress);
       PTLF("0\t1\t2\t3\t4\t5\t6\t7\t8\t9\ta\tb\tc\td\te\tf\t\n\t\t\t");*/
-    byte writtenToWire = 0;
+    char writtenToWire = 0;
     do {
       if (eeAddress == EEPROM_SIZE) {
         PTL();
@@ -82,16 +82,16 @@ void NybbleEEPROM::copyDataFromPgmToI2cEeprom(unsigned int &eeAddress, unsigned 
         //#endif
         return;
       }
-      /*PT((int8_t)pgm_read_byte(pgmAddress + writtenToEE));
+      /*PT((int8_t)pgm_read_char(pgmAddress + writtenToEE));
         PT("\t");*/
-      Wire.write((byte)pgm_read_byte(pgmAddress + writtenToEE++));
+      Wire.write((char)pgm_read_byte_near(pgmAddress + writtenToEE++));
       writtenToWire++;
       eeAddress++;
     } while ((--len > 0 ) && (eeAddress  % PAGE_LIMIT ) && (writtenToWire < WIRE_LIMIT));//be careful with the chained conditions
     //self-increment may not work as expected
     Wire.endTransmission();
     delay(6);  // needs 5ms for page write
-    //PTL("\nwrote " + String(writtenToWire) + " bytes.");
+    //PTL("\nwrote " + String(writtenToWire) + " chars.");
   }
   //PTLF("finish copying to I2C EEPROM");
 }
@@ -102,10 +102,10 @@ void NybbleEEPROM::assignSkillAddressToOnboardEeprom() {
   //      PT(sizeof(Skills::progmemPointer) / 2);
   PTL(" skill addresses...");
   // TODO
-  //      for (byte s = 0; s < sizeof(Skills::progmemPointer) / 2; s++) { //save skill info to on-board EEPROM, load skills to SkillList
-  for (byte s = 0; s < 1; s++) {
+  //      for (char s = 0; s < sizeof(Skills::progmemPointer) / 2; s++) { //save skill info to on-board EEPROM, load skills to SkillList
+  for (char s = 0; s < 1; s++) {
     PTL(s);
-    byte nameLen = EEPROM.read(SKILLS + skillAddressShift++); //without last type character
+    char nameLen = EEPROM.read(SKILLS + skillAddressShift++); //without last type character
     //PTL(nameLen);
     /*for (int n = 0; n < nameLen; n++)
       PT((char)EEPROM.read(SKILLS + skillAddressShift + n));
@@ -125,6 +125,6 @@ void NybbleEEPROM::assignSkillAddressToOnboardEeprom() {
   PTLF("Finished!");
 }
 
-int8_t NybbleEEPROM::getAdaptiveCoefficient(byte joint_index, byte parameter_index) {
+int8_t NybbleEEPROM::getAdaptiveCoefficient(char joint_index, char parameter_index) {
   return EEPROM.read(ADAPT_PARAM + joint_index * NUM_ADAPT_PARAM + parameter_index);
 }

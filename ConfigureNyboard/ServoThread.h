@@ -79,17 +79,17 @@ class ServoThread : public ProtoThread {
     // Current angle each joint should move to
     float duty_angles[16];
 
-    bool is_shutdown;
+    bool is_shutdown = true;
 
     float postureOrWalkingFactor;
 
-    float pulsePerDegree[DOF] = {};
-    int8_t servoCalibs[DOF] = {};
-    char currentAng[DOF] = {};
-    int calibratedDuty0[DOF] = {};
+    float pulsePerDegree[DOF];
+    int8_t servoCalibs[DOF];
+    char currentAng[DOF];
+    int calibratedDuty0[DOF];
 
     // 0x40 is the default address for the servo driver
-    Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x40);
+    Adafruit_PWMServoDriver pwm;
 
     /**
      * This function will move each servo to the value in duty_angles,

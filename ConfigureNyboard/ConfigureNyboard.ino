@@ -80,7 +80,7 @@ void writeConstantsToOnboardEeprom() {
    onboard EEPROM. This updates both the onboard_eeprom_address and i2c_eeprom_address.
 */
 
-void saveInstinctToEeprom(char** instinct, byte num_instincts, unsigned int &onboard_eeprom_address, unsigned int &i2c_eeprom_address) {
+void saveInstinctToEeprom(const char** instinct, byte num_instincts, unsigned int &onboard_eeprom_address, unsigned int &i2c_eeprom_address) {
   for (byte s = 0; s < num_instincts; s++) {
     if (! Globals::eeprom_overflow) {
       NybbleEEPROM::WriteIntToOnboardEEPROM(onboard_eeprom_address, i2c_eeprom_address);
@@ -197,7 +197,7 @@ void loop() {
       servo_thread.resetCalibsFromOnboardEeprom();
       break;
     case COMMAND_MOVE_CONTINUOUSLY:
-      Globals::motion.loadSkill(Globals::command_vals[0], Globals::command_vals[1]);
+      Globals::motion.loadSkill((SkillType) Globals::command_vals[0], Globals::command_vals[1]);
       break;
     case COMMAND_MOVE_TO_POSITION:
       Globals::motion.loadSkill(INSTINCT_POSTURE, Globals::command_vals[0]);
