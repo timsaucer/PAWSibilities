@@ -1,4 +1,6 @@
 /Debug/
 .project
 .cproject
+.settings
+eclipsemain.cpp
 
