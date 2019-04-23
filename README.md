@@ -1,14 +1,14 @@
 # PAWSibilities
- 
+
 PAWSibilities is an Arduino library designed to operate the Nybble board, which was developed under the OpenCat project. Please see their original code at [PetoiCamp](https://github.com/PetoiCamp/OpenCat). The code contained in this repository relies heavily on the original design.
 
 This code is **very** much still in active development. It is close to ready for its first release, but there are multiple issues that still need to be resolved.
 
 ## Credits
- 
-PAWSibilities Lead Developer - Tim Saucer (@timsaucer)
-OpenCat Team -  Petoi LLC (@PetoiCamp)
-OpenCat Lead Designer - Rongzhong Li (@RongzhongLi)
+
+* PAWSibilities Lead Developer - Tim Saucer (@timsaucer)
+* OpenCat Team -  Petoi LLC (@PetoiCamp)
+* OpenCat Lead Designer - Rongzhong Li (@RongzhongLi)
 
 ## License
  
