@@ -129,3 +129,7 @@ bool SerialThread::getYesOrNo() {
   }
   return curr_val == 'y' || curr_val == 'Y';
 }
+
+void SerialThread::sendStatus() {
+    // TODO implement
+}

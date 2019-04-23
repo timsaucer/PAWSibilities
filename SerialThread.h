@@ -60,6 +60,8 @@ class SerialThread : public ProtoThread {
      */
     static bool getYesOrNo();
 
+    void sendStatus();
+
   private:
     void runLoop();
 
