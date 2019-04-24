@@ -44,8 +44,6 @@
 #include "Enums.h"
 #include "Instincts.h"
 
-#include "CalibrateMPU.h"
-
 #include "SerialThread.h"
 #include "ServoThread.h"
 #include "ImuThread.h"
@@ -122,7 +120,6 @@ void setup() {
 #endif
 
     serial_thread.initialize();
-    mpu.initialize();
     imu_thread.initialize();
     range_finder_thread.initialize();
     led_thread.initialize();

@@ -78,8 +78,10 @@
 
 // I2Cdev and MPU6050 must be installed as libraries
 #include <I2Cdev.h>
-#include <MPU6050.h>
+#include <MPU6050_6Axis_MotionApps20.h>
 #include <Wire.h>
+#include "Macros.h"
+#include "NybbleEEPROM.h"
 
 ///////////////////////////////////   CONFIGURATION   /////////////////////////////
 //Change this 3 variables if you want to fine tune the skecth to your needs.
@@ -95,10 +97,10 @@ int giro_deadzone = 1;   //Giro error allowed, make it lower to get more precisi
 //MPU6050 mpu;
 MPU6050 mpu(0x68); // <-- use for AD0 high
 
-int ag[6];      //int16_t ax, ay, az, gx, gy, gz;
-int ag_mean[6];  //mean_ax, mean_ay, mean_az, mean_gx, mean_gy, mean_gz;
-int ag_offset[6];  //ax_offset, ay_offset, az_offset, gx_offset, gy_offset, gz_offset;
-int mpu_offset[6];
+int16_t ag[6];      //int16_t ax, ay, az, gx, gy, gz;
+int16_t ag_mean[6];  //mean_ax, mean_ay, mean_az, mean_gx, mean_gy, mean_gz;
+int16_t ag_offset[6];  //ax_offset, ay_offset, az_offset, gx_offset, gy_offset, gz_offset;
+int16_t mpu_offset[6];
 
 void meanMpuSensors() {
   long i = 0;

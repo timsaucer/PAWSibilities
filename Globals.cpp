@@ -52,3 +52,5 @@ bool Globals::eeprom_overflow = false;
 float Globals::roll_pitch_deviation[2];
 
 int16_t Globals::command_vals[MAX_COMMAND_VALUES];
+
+bool Globals::mpuInterrupt = false;

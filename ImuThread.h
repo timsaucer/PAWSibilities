@@ -46,9 +46,10 @@
 #include "NybbleEEPROM.h"
 
 #include <Wire.h>
-#include <MPU6050_6Axis_MotionApps20.h>
 
-volatile bool mpuInterrupt = false;     // indicates whether MPU interrupt pin has gone high
+class MPU6050;
+class Quaternion;
+class VectorFloat;
 
 /**
    \class ImuThread
@@ -57,6 +58,7 @@ volatile bool mpuInterrupt = false;     // indicates whether MPU interrupt pin h
 class ImuThread : public ProtoThread {
   public:
     ImuThread(uint16_t interval);
+    ~ImuThread();
 
     void initialize();
 
@@ -67,7 +69,7 @@ class ImuThread : public ProtoThread {
 
     void checkBodyMotion();
 
-    MPU6050 mpu;
+    MPU6050 *mpu;
 
     int8_t lag;
     float ypr[3];
@@ -86,8 +88,8 @@ class ImuThread : public ProtoThread {
     uint8_t fifoBuffer[PACKET_SIZE]; // FIFO storage buffer
 
     // orientation/motion vars
-    Quaternion q;           // [w, x, y, z]         quaternion container
-    VectorFloat gravity;    // [x, y, z]            gravity vector
+    Quaternion *q;           // [w, x, y, z]         quaternion container
+    VectorFloat *gravity;    // [x, y, z]            gravity vector
 };
 
 #endif // _IMU_THREAD_H_

@@ -62,6 +62,7 @@ class Globals {
 
     static float roll_pitch_deviation[2];
 
+    static bool mpuInterrupt;     // indicates whether MPU interrupt pin has gone high
 };
 
 #endif // _GLOBALS_H_

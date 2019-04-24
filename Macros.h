@@ -43,6 +43,7 @@
 
 #include <EEPROM.h>
 #include <arduino.h>
+#include "Configuration.h"
 
 #define PT(s) Serial.print(s)  //makes life easier
 #define PTL(s) Serial.println(s)
