@@ -62,6 +62,8 @@ class ImuThread : public ProtoThread {
 
     void initialize();
 
+    MPU6050* getMPU() const;
+
   private:
     void runLoop();
 

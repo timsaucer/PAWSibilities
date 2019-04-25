@@ -138,6 +138,10 @@ void ImuThread::initialize() {
 
 }
 
+MPU6050* ImuThread::getMPU() const {
+    return mpu;
+}
+
 void ImuThread::runLoop() {
     Serial.print("ImuThread ");
     Serial.println(Globals::curr_time);
