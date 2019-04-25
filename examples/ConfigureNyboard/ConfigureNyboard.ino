@@ -44,13 +44,15 @@
 #include "Enums.h"
 #include "Instincts.h"
 
-#include "CalibrateMPU.h"
-
 #include "SerialThread.h"
 #include "ServoThread.h"
+#include "ImuThread.h"
+
+#include "CalibrateMPU.h"
 
 ServoThread servo_thread(0);
 SerialThread serial_thread(0);
+ImuThread imu_thread(0);
 
 /**
    Store constants on the onboard EEPROM.
@@ -150,8 +152,8 @@ void setup() {
   Fastwire::setup(400, true);
 #endif
 
-  serial_thread.initialize();
-  mpu.initialize();
+  servo_thread.initialize();
+  imu_thread.initialize();
 
   // wait for ready
   while (Serial.available() && Serial.read()); // empty buffer
@@ -165,7 +167,7 @@ void setup() {
   bool calibrate_mpu = SerialThread::getYesOrNo();
   PTLF("Gotcha!");
   if (calibrate_mpu) {
-    runMpuCalibrationRoutines();
+    runMpuCalibrationRoutines(imu_thread.getMPU());
   }
 }
 
